@@ -135,7 +135,7 @@
             document.getElementById('userEmail').textContent = payload.email || '';
             email = payload.email || '';
             if (payload.picture) document.getElementById('userAvatar').src = payload.picture;
-            await load_settings();
+            load_settings();
         }
 
         function showLoginError(msg) {
