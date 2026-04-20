@@ -1,0 +1,885 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="referrer" content="strict-origin-when-cross-origin">
+    <title>Распределение затрат на коммунальные услуги</title>
+    <script src="https://accounts.google.com/gsi/client" async defer></script>
+    <base target="_top">
+    <style>
+        * { box-sizing: border-box; }
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+            background: #f5f5f5;
+            font-size: 14px;
+        }
+        h1 { color: #333; text-align: center; }
+        #loginScreen { display: flex; flex-direction: column; align-items: center; justify-content: center; min-height: 60vh; }
+        .login-box { background: white; padding: 40px; border-radius: 12px; box-shadow: 0 4px 16px rgba(0,0,0,0.12); display: flex; flex-direction: column; align-items: center; gap: 20px; min-width: 340px; text-align: center; }
+        .login-logo { font-size: 48px; }
+        .login-title { font-size: 18px; color: #333; margin: 0; }
+        .login-hint { font-size: 13px; color: #888; margin: 0; line-height: 1.5; }
+        #googleBtnWrap { display: flex; justify-content: center; }
+        #loginError { color: #d32f2f; font-size: 13px; background: #ffebee; padding: 10px 16px; border-radius: 6px; display: none; white-space: pre-line; }
+        #userBar { display: none; background: white; padding: 10px 20px; border-radius: 8px; margin-bottom: 16px; box-shadow: 0 2px 4px rgba(0,0,0,0.08); align-items: center; justify-content: space-between; }
+        .user-info { display: flex; align-items: center; gap: 10px; }
+        #userAvatar { width: 34px; height: 34px; border-radius: 50%; }
+        .user-name { font-weight: bold; font-size: 13px; }
+        .user-email { font-size: 12px; color: #888; }
+        #logoutBtn { padding: 6px 14px; background: #f44336; color: white; border: none; border-radius: 4px; cursor: pointer; font-size: 13px; }
+        #logoutBtn:hover { background: #d32f2f; }
+        #appContent { display: none; }
+        .section {
+            background: white;
+            padding: 20px;
+            margin-bottom: 20px;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        .file-upload {
+            display: flex;
+            gap: 10px;
+            align-items: center;
+            flex-wrap: wrap;
+        }
+        .file-upload select {
+            padding: 8px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            background: #e8f5e9;
+            cursor: pointer;
+        }
+        .file-upload option {
+            background: white;
+        }
+        .file-upload select:hover {
+            background: #cdf7d1;
+        }
+        .file-upload button {
+            padding: 10px 20px;
+            background: #4CAF50;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+        }
+        .file-upload button:hover { background: #45a049; }
+        .file-upload button:disabled { background: #ccc; cursor: not-allowed; }
+        .error {
+            color: #d32f2f;
+            padding: 10px;
+            background: #ffebee;
+            border-radius: 4px;
+            display: none;
+            margin-top: 10px;
+        }
+        #loader {
+            display: none;
+            color: #1a73e8;
+            font-weight: bold;
+            padding: 6px 0;
+        }
+        .filters { display: none; }
+        .filter-group {
+            display: inline-block;
+            vertical-align: top;
+            margin-right: 20px;
+            margin-bottom: 20px;
+        }
+        .filter-group h3 { margin-top: 0; margin-bottom: 10px; color: #555; }
+        #filtersSection .filter-group { margin-bottom: 0; }
+        .filter-options { display: flex; flex-wrap: wrap; gap: 10px; }
+        .dropdown-container { position: relative; display: inline-block; }
+        .dropdown-button {
+            padding: 8px 12px;
+            background: #e8f5e9;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            cursor: pointer;
+            min-width: 400px;
+            text-align: left;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        .dropdown-button:hover { background: #cdf7d1; }
+        .dropdown-arrow { font-size: 10px; }
+        .dropdown-content {
+            display: none;
+            position: absolute;
+            background: white;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            min-width: 400px;
+            max-height: 300px;
+            overflow-y: auto;
+            z-index: 1000;
+            box-shadow: 0 4px 8px rgba(0,0,0,0.15);
+        }
+        .dropdown-content.show { display: block; }
+        .dropdown-actions {
+            padding: 8px;
+            border-bottom: 1px solid #ddd;
+            display: flex;
+            gap: 8px;
+        }
+        .dropdown-actions button {
+            padding: 4px 8px;
+            font-size: 12px;
+            background: #4CAF50;
+            color: white;
+            border: none;
+            border-radius: 3px;
+            cursor: pointer;
+        }
+        .dropdown-actions button:hover { background: #45a049; }
+        .dropdown-actions button.reset { background: #f44336; }
+        .dropdown-actions button.reset:hover { background: #d32f2f; }
+        .dropdown-item {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            padding: 8px 12px;
+            cursor: pointer;
+        }
+        .dropdown-item:hover { background: #f5f5f5; }
+        .dropdown-item input { margin: 0; }
+        .dropdown-item label { cursor: pointer; margin: 0; flex: 1; }
+        .calculation { display: none; position: relative; }
+        .calculation h2 {
+            color: #333;
+            border-bottom: 2px solid #4CAF50;
+            padding-bottom: 10px;
+            margin-top: 0;
+        }
+        .info-row { margin-bottom: 15px; font-size: 14px; }
+        .info-label { font-weight: bold; color: #555; }
+        .summary {
+            display: grid;
+            grid-template-columns: 1fr 1fr 1fr;
+            gap: 15px;
+            margin-bottom: 20px;
+            padding: 15px;
+            background: #e8f5e9;
+            border-radius: 4px;
+        }
+        .summary-item { text-align: center; }
+        .summary-value { font-size: 20px; font-weight: bold; color: #2e7d32; }
+        .summary-label { color: #666; font-size: 12px; }
+        table { width: 100%; border-collapse: collapse; margin-top: 20px; }
+        th, td { padding: 12px; text-align: left; border-bottom: 1px solid #ddd; }
+        th { background: #4CAF50; color: white; text-align: center; }
+        td { text-align: center; }
+        tr:hover { background: #f5f5f5; }
+        .hidden { display: none !important; }
+        .print-btn {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            background: #4CAF50;
+            border: none;
+            border-radius: 4px;
+            padding: 8px 12px;
+            cursor: pointer;
+            color: white;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        .print-btn:hover { background: #45a049; }
+        .print-only { display: none; }
+        @media print {
+            body { overflow: visible; }
+            body > * { display: none !important; }
+            .print-only {
+                display: block !important;
+                position: absolute;
+                left: 0;
+                top: 0;
+                width: 100%;
+            }
+            .print-header { font-size: 14px; font-weight: bold; margin-bottom: 20px; }
+            .print-footer { margin-top: 60px; font-size: 12px; }
+            .print-only .summary {
+                background: none !important;
+                border: 1px solid #000;
+                padding: 10px;
+            }
+            .print-only .summary-value { color: #000 !important; }
+            .print-only th { background: #ccc !important; color: #000 !important; }
+            .print-only table { page-break-inside: avoid; }
+            .print-only tr { page-break-inside: avoid; }
+        }
+    </style>
+</head>
+<body>
+    <h1>Распределение затрат на коммунальные услуги</h1>
+
+    <div id="loginScreen">
+        <div class="login-box">
+            <div class="login-logo">📊</div>
+            <p class="login-title">Вход в приложение</p>
+            <p class="login-hint">Используйте Google-аккаунт, которому предоставлен доступ.<br>Вход происходит без всплывающих окон.</p>
+            <div id="g_id_onload"
+                 data-client_id="689537368198-bt1m9v6rm5pcv35sucqqcfin4hou9nri.apps.googleusercontent.com"
+                 data-callback="handleGoogleSignIn"
+                 data-auto_select="false"
+                 data-use_fedcm_for_prompt="true"
+                 data-itp_support="true">
+            </div>
+            <div id="googleBtnWrap">
+                <div class="g_id_signin"
+                     data-type="standard"
+                     data-size="large"
+                     data-theme="outline"
+                     data-text="signin_with"
+                     data-shape="rectangular"
+                     data-logo_alignment="left"
+                     data-locale="ru"
+                     data-width="280">
+                </div>
+            </div>
+            <div id="loginError"></div>
+        </div>
+    </div>
+
+    <div id="userBar">
+        <div class="user-info">
+            <img id="userAvatar" src="" alt="avatar">
+            <div>
+                <div class="user-name" id="userName"></div>
+                <div class="user-email" id="userEmail"></div>
+            </div>
+        </div>
+        <button id="logoutBtn">Выйти</button>
+    </div>
+
+    <div id="appContent">
+        <div class="section">
+            <div class="file-upload">
+                <label for="sheetSelect" style="font-weight:bold; color:#555;">Вид ресурса/лист:</label>
+                <select id="sheetSelect">
+                    <option value="ЭЭ (Юхнина)">ЭЭ (Юхнина)</option>
+                    <option value="ЭЭ" selected>ЭЭ</option>
+                    <option value="ТЭ (без ТН)">ТЭ (без ТН)</option>
+                    <option value="ХВСиВО (c поверх., без Юхнина)">ХВСиВО (c поверх., без Юхнина)</option>
+                </select>
+                <button id="loadBtn">Загрузить / обновить данные</button>
+            </div>
+            <div id="loader">⏳ Загрузка данных из таблицы...</div>
+            <div id="error" class="error"></div>
+        </div>
+
+        <div id="filtersSection" class="section filters">
+            <div class="filter-group">
+                <h3>Расчетный период</h3>
+                <div id="periodFilters" class="filter-options"></div>
+            </div>
+            <div class="filter-group">
+                <h3>Контрагент</h3>
+                <div id="counterpartyFilters" class="filter-options"></div>
+            </div>
+        </div>
+
+        <div id="calculationSection" class="section calculation">
+            <button id="printBtn" class="print-btn" title="Печать">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="M6 9V2h12v7"></path>
+                    <path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"></path>
+                    <rect x="6" y="14" width="12" height="8"></rect>
+                </svg>
+            </button>
+            <h2 id="reportTitle">Распределение расходов на ...</h2>
+            <div class="info-row">
+                <span class="info-label">Объект:</span> <span id="address"></span>
+            </div>
+            <div class="info-row">
+                <span class="info-label">Расчетный период:</span> <span id="selectedPeriods"></span>
+            </div>
+            <div class="info-row">
+                <span class="info-label">Первичные документы РСО:</span> <span id="rsoDocuments"></span>
+            </div>
+            <div class="summary">
+                <div class="summary-item">
+                    <div class="summary-value" id="totalArea">0</div>
+                    <div class="summary-label">Общая площадь для распределения, кв.м.</div>
+                </div>
+                <div class="summary-item">
+                    <div class="summary-value" id="totalVolume">0</div>
+                    <div class="summary-label" id="totalVolumeLabel">Объем потребления, ***</div>
+                </div>
+                <div class="summary-item">
+                    <div class="summary-value" id="totalAmount">0</div>
+                    <div class="summary-label">Общая сумма потребления, руб.</div>
+                </div>
+            </div>
+            <table>
+                <thead>
+                    <tr>
+                        <th>Контрагент</th>
+                        <th>Площадь для распределения, кв.м.</th>
+                        <th id="volumeHeader">Объем потребления, ***</th>
+                        <th>Сумма, приходящаяся на контрагента, руб.</th>
+                    </tr>
+                </thead>
+                <tbody id="calculationTable"></tbody>
+            </table>
+        </div>
+    </div>
+
+    <!-- Блок только для печати -->
+    <div id="printContainer" class="print-only">
+        <div class="print-header"><span>ООО "Славянка"</span></div>
+        <h2 id="printReportTitle">Распределение расходов на ...</h2>
+        <div class="info-row">
+            <span class="info-label">Объект:</span> <span id="printAddress"></span>
+        </div>
+        <div class="info-row">
+            <span class="info-label">Расчетный период:</span> <span id="printSelectedPeriods"></span>
+        </div>
+        <div class="info-row">
+            <span class="info-label">Документы-основания:</span> <span id="printRsoDocuments"></span>
+        </div>
+        <div class="summary">
+            <div class="summary-item">
+                <div class="summary-value" id="printTotalArea">0</div>
+                <div class="summary-label">Общая площадь для распределения, кв.м.</div>
+            </div>
+            <div class="summary-item">
+                <div class="summary-value" id="printTotalVolume">0</div>
+                <div class="summary-label" id="printTotalVolumeLabel">Объем потребления, ***</div>
+            </div>
+            <div class="summary-item">
+                <div class="summary-value" id="printTotalAmount">0</div>
+                <div class="summary-label">Общая сумма потребления, руб.</div>
+            </div>
+        </div>
+        <table id="printTable">
+            <thead>
+                <tr>
+                    <th>Контрагент</th>
+                    <th>Площадь для распределения, кв.м.</th>
+                    <th id="printVolumeHeader">Объем потребления, ***</th>
+                    <th>Сумма, приходящаяся на контрагента, руб.</th>
+                </tr>
+            </thead>
+            <tbody id="printCalculationTable"></tbody>
+        </table>
+        <div class="print-footer">
+            <span>Ответственное лицо: _____________________________________</span>
+        </div>
+    </div>
+
+    <script>
+        // ─── Константы ───────────────────────────────────────────────────────────
+        const sheetNames   = ['ЭЭ (Юхнина)', 'ЭЭ', 'ТЭ (без ТН)', 'ХВСиВО (c поверх., без Юхнина)'];
+        const measureNames = ['кВт*ч',       'кВт*ч', 'Гкал',      'куб.м'];
+        const MONTHS_RU    = ['Январь','Февраль','Март','Апрель','Май','Июнь',
+                              'Июль','Август','Сентябрь','Октябрь','Ноябрь','Декабрь'];
+
+        // ─── Состояние ───────────────────────────────────────────────────────────
+        let currentIdToken = null;
+
+        let parsedData            = null;
+        let selectedPeriods       = [];
+        let selectedCounterparties = [];
+
+        // ─── Элементы DOM ────────────────────────────────────────────────────────
+        const loadBtn            = document.getElementById('loadBtn');
+        const sheetSelect        = document.getElementById('sheetSelect');
+        const errorDiv           = document.getElementById('error');
+        const loaderDiv          = document.getElementById('loader');
+        const filtersSection     = document.getElementById('filtersSection');
+        const calculationSection = document.getElementById('calculationSection');
+        const printBtn           = document.getElementById('printBtn');
+
+        function handleGoogleSignIn(response) {
+            const idToken = response.credential;
+            let payload;
+            try {
+                payload = parseJwtUtf8(idToken);
+            } catch(e) {
+                showLoginError('Ошибка декодирования токена: ' + e.message);
+                return;
+            }
+            currentIdToken = idToken;
+            document.getElementById('loginScreen').style.display = 'none';
+            document.getElementById('userBar').style.display = 'flex';
+            document.getElementById('appContent').style.display = 'block';
+            document.getElementById('loginError').style.display = 'none';
+            document.getElementById('userName').textContent = payload.name || '';
+            document.getElementById('userEmail').textContent = payload.email || '';
+            if (payload.picture) document.getElementById('userAvatar').src = payload.picture;
+            //const savedUrl = sessionStorage.getItem('appsScriptUrl');
+            //if (savedUrl) document.getElementById('apiUrl').value = savedUrl;
+        }
+
+        function showLoginError(msg) {
+            const el = document.getElementById('loginError');
+            el.textContent = msg;
+            el.style.display = 'block';
+        }
+
+        function parseJwtUtf8(token) {
+            const base64Url = token.split('.')[1];
+            const base64 = base64Url.replace(/-/g, '+').replace(/_/g, '/');
+            const padded = base64 + '='.repeat((4 - base64.length % 4) % 4);
+
+            const binary = atob(padded);
+            const bytes = Uint8Array.from(binary, function(c) {
+                return c.charCodeAt(0);
+            });
+            const json = new TextDecoder('utf-8').decode(bytes);
+
+            return JSON.parse(json);
+        }
+
+        // ─── Обработчики ─────────────────────────────────────────────────────────
+        document.getElementById('logoutBtn').addEventListener('click', function() {
+            currentIdToken = null;
+            parsedData = null;
+            document.getElementById('loginScreen').style.display = 'flex';
+            document.getElementById('userBar').style.display = 'none';
+            document.getElementById('appContent').style.display = 'none';
+            filtersSection.style.display = 'none';
+            calculationSection.style.display = 'none';
+            if (window.google && google.accounts && google.accounts.id) {
+                google.accounts.id.disableAutoSelect();
+            }
+        });
+
+        sheetSelect.addEventListener('change', function () {
+            filtersSection.style.display    = 'none';
+            calculationSection.style.display = 'none';
+            parsedData              = null;
+            selectedPeriods         = [];
+            selectedCounterparties  = [];
+            hideError();
+        });
+
+        loadBtn.addEventListener('click', async function() {
+            const baseUrl = 'https://script.google.com/macros/s/AKfycbxMFw3hO-qegx8A72lSMJuOyNlE4KQGkX62AWREnTY9T4-WC26bVJkLMI9HYZwFjXux/exec';
+
+            const sheetName = document.getElementById('sheetSelect').value;
+            if (!currentIdToken) { showError('Необходимо войти через Google.'); return; }
+
+            //sessionStorage.setItem('appsScriptUrl', baseUrl);
+            hideError();
+            showLoader(true);
+            this.disabled = true;
+
+            try {
+                // ВАЖНО: обычный form POST, чтобы не было CORS preflight
+                const formData = new URLSearchParams();
+                formData.append('idToken', currentIdToken);
+                formData.append('sheet', sheetName);
+
+                const resp = await fetch(baseUrl, {
+                    method: 'POST',
+                    body: formData
+                });
+
+                if (!resp.ok) throw new Error('HTTP ' + resp.status);
+                const json = await resp.json();
+
+                if (!json.ok) {
+                    showError(json.forbidden ? '⛔ ' + json.error + '\n\nОбратитесь к администратору.' : json.error);
+                    return;
+                }
+                processRawData(json.data, sheetName);
+            } catch(err) {
+                showError('Ошибка загрузки: ' + err.message);
+            } finally {
+                showLoader(false);
+                document.getElementById('loadBtn').disabled = false;
+            }
+        });
+
+        printBtn.addEventListener('click', function () {
+            const map = [
+                ['reportTitle', 'printReportTitle'],
+                ['address', 'printAddress'],
+                ['selectedPeriods', 'printSelectedPeriods'],
+                ['rsoDocuments', 'printRsoDocuments'],
+                ['totalArea', 'printTotalArea'],
+                ['totalVolume', 'printTotalVolume'],
+                ['totalAmount', 'printTotalAmount'],
+                ['totalVolumeLabel', 'printTotalVolumeLabel'],
+                ['volumeHeader', 'printVolumeHeader']
+            ];
+            map.forEach(function(pair) {
+                document.getElementById(pair[1]).textContent = document.getElementById(pair[0]).textContent;
+            });
+            document.getElementById('printCalculationTable').innerHTML = document.getElementById('calculationTable').innerHTML;
+            window.print();
+        });
+
+        // ─── Обработка полученных данных (аналог parseSheetData из оригинала) ────
+        function processRawData(data, sheetName) {
+            // data — массив строк, каждая строка — массив ячеек (строки/числа/null)
+            if (!data || data.length === 0) {
+                throw new Error('Лист ' + sheetName + ' пуст или не найден');
+            }
+
+            let periodRow = 0, headRow = 0, totalRow = 0;
+
+            for (let i = 0; i < data.length; i++) {
+                const val = (data[i] && data[i][0] != null) ? String(data[i][0]) : '***';
+                if (val === 'Выставлено ресурсоснабжающей организацией за расчетный месяц' && !periodRow) {
+                    periodRow = i;
+                }
+                if (val === 'Арендатор' && !headRow) {
+                    headRow = i;
+                }
+                if (val === 'Всего' && !totalRow) {
+                    totalRow = i;
+                }
+            }
+
+            if (!periodRow || !headRow || !totalRow) {
+                throw new Error('Лист ' + sheetName + ' не соответствует требуемому формату');
+            }
+
+            const measureIdx  = sheetNames.indexOf(sheetName);
+            const measureName = 'Объем потребления, ' + (measureNames[measureIdx] || '***');
+
+            document.getElementById('reportTitle').textContent    = (data[0] && data[0][0]) ? String(data[0][0]) : '***';
+            document.getElementById('address').textContent        = (data[1] && data[1][0]) ? String(data[1][0]) : '***';
+            document.getElementById('totalVolumeLabel').textContent = measureName;
+            document.getElementById('volumeHeader').textContent    = measureName;
+
+            parsedData = parseSheetData(data, periodRow, headRow, totalRow);
+            displayFilters(parsedData);
+            filtersSection.style.display = 'block';
+            updateCalculation();
+        }
+
+        function parseSheetData(data, periodRow, headRow, totalRow) {
+            const periodColumns = [];
+            const periods       = [];
+            const rsoDocs       = [];
+            const totalAmounts  = [];
+            const totalVolumes  = [];
+
+            const pRow = data[periodRow] || [];
+            for (let i = 2; i < pRow.length; i += 2) {
+                const val = pRow[i];
+                if (val == null || val === '') continue;
+                periodColumns.push(i);
+                const dateStr = formatDate(val);
+                periods.push({ index: i, date: dateStr, raw: val });
+
+                const val2 = (data[periodRow + 1] && data[periodRow + 1][i] != null)
+                    ? String(data[periodRow + 1][i]) : 'не указан';
+                rsoDocs.push(val2);
+
+                const val3 = data[periodRow + 2] ? data[periodRow + 2][i] : null;
+                totalAmounts.push(parseNum(val3));
+
+                const val4 = data[periodRow + 3] ? data[periodRow + 3][i] : null;
+                totalVolumes.push(parseNum(val4));
+            }
+
+            const totalAreaForDistribution = parseNum(data[totalRow] ? data[totalRow][1] : null);
+
+            const counterparties   = [];
+            const counterpartyData = [];
+
+            for (let row = headRow + 1; row < totalRow; row++) {
+                const name = data[row] ? data[row][0] : null;
+                if (name == null || name === '') continue;
+                counterparties.push(String(name).trim());
+
+                const area    = parseNum(data[row] ? data[row][1] : null);
+                const volumes = [];
+                const amounts = [];
+
+                for (let i = 0; i < periodColumns.length; i++) {
+                    const volCol = periodColumns[i];
+                    const amtCol = periodColumns[i] + 1;
+                    volumes.push(parseNum(data[row] ? data[row][volCol] : null));
+                    amounts.push(parseNum(data[row] ? data[row][amtCol] : null));
+                }
+
+                counterpartyData.push({ volumes, amounts, area });
+            }
+
+            return { periods, rsoDocs, totalAmounts, totalVolumes, totalAreaForDistribution, counterparties, counterpartyData };
+        }
+
+        // ─── Дата ────────────────────────────────────────────────────────────────
+        // GAS передаёт даты как строки "MM/DD/YYYY" или уже как "Январь YYYY"
+        function formatDate(val) {
+            if (!val) return '';
+            // Если уже строка с русским месяцем — вернуть как есть
+            if (typeof val === 'string') {
+                // Попытка разобрать формат "MM/DD/YYYY" (GAS locale)
+                const parts = val.match(/^(\d{1,2})\/(\d{1,2})\/(\d{4})$/);
+                if (parts) {
+                    const month = parseInt(parts[1], 10) - 1;
+                    const year  = parseInt(parts[3], 10);
+                    return MONTHS_RU[month] + ' ' + year;
+                }
+                return val;
+            }
+            if (typeof val === 'number') {
+                // Числовая дата Excel (серийный номер) — вручную декодируем
+                const date = excelDateToJS(val);
+                if (date) return MONTHS_RU[date.getMonth()] + ' ' + date.getFullYear();
+                return String(val);
+            }
+            return String(val);
+        }
+
+        function excelDateToJS(serial) {
+            // Excel serial (1900-based, с поправкой на баг с 1900 годом)
+            const utc_days   = Math.floor(serial - 25569);
+            const utc_value  = utc_days * 86400;
+            return new Date(utc_value * 1000);
+        }
+
+        function parseNum(val) {
+            if (val === null || val === undefined || val === '') return 0;
+            const n = Number(val);
+            return isNaN(n) ? 0 : n;
+        }
+
+        // ─── Фильтры ─────────────────────────────────────────────────────────────
+        function displayFilters(data) {
+            const reversedPeriods = [...data.periods].reverse();
+            createDropdown('periodFilters', reversedPeriods.map(p => p.date), 'period');
+            createDropdown('counterpartyFilters', data.counterparties.map(n => n.length > 30 ? n.substring(0, 30) + '...' : n), 'counterparty');
+
+            selectedPeriods = [0];
+            selectedCounterparties = data.counterparties.length > 0 ? [0] : [];
+
+            setTimeout(() => {
+                document.querySelectorAll('#periodFilters input[type="checkbox"]').forEach((cb, i) => {
+                    cb.checked = (i === 0);
+                });
+                document.querySelectorAll('#counterpartyFilters input[type="checkbox"]').forEach((cb, i) => {
+                    cb.checked = (i === 0);
+                });
+                updateDropdownSelectionFromCheckboxes();
+            }, 0);
+        }
+
+        function updateDropdownSelectionFromCheckboxes() {
+            const periodCheckboxes = document.querySelectorAll(
+                '#periodFilters input[type="checkbox"]',
+            );
+            selectedPeriods = Array.from(periodCheckboxes).filter(
+                (cb) => cb.checked,
+            );
+
+            const counterpartyCheckboxes = document.querySelectorAll(
+                '#counterpartyFilters input[type="checkbox"]',
+            );
+            selectedCounterparties = Array.from(counterpartyCheckboxes).filter(
+                (cb) => cb.checked,
+            );
+
+            updateDropdownText(
+                "periodFilters",
+                selectedPeriods,
+                periodCheckboxes.length,
+            );
+            updateDropdownText(
+                "counterpartyFilters",
+                selectedCounterparties,
+                counterpartyCheckboxes.length,
+            );
+
+            updateCalculation();
+        }
+
+        function updateDropdownText(containerId, checked, totalCount) {
+            const container = document.getElementById(containerId);
+            const textEl    = container.querySelector('.dropdown-text');
+            const checkedCount = checked.length;
+            if (!textEl) return;
+            if (checkedCount === totalCount)     textEl.textContent = `Все выбрано (${checkedCount})`;
+            else if (checkedCount === 0)         textEl.textContent = 'Ничего не выбрано';
+            else if (checkedCount === 1)         textEl.textContent = checked[0].nextSibling.textContent;
+            else                                 textEl.textContent = `${checkedCount} выбрано`;
+        }
+
+        function createDropdown(containerId, items, filterType) {
+            const container = document.getElementById(containerId);
+            container.innerHTML = '';
+
+            const wrapper = document.createElement('div');
+            wrapper.className = 'dropdown-container';
+
+            const lastIdx = items.length - 1;
+
+            const button = document.createElement('button');
+            button.className = 'dropdown-button';
+            button.type      = 'button';
+            button.innerHTML = `<span class="dropdown-text">${items.length} выбрано</span><span class="dropdown-arrow">▼</span>`;
+            button.onclick   = function (e) {
+                e.stopPropagation();
+                document.querySelectorAll('.dropdown-content.show').forEach(d => {
+                    if (d !== wrapper.querySelector('.dropdown-content')) d.classList.remove('show');
+                });
+                wrapper.querySelector('.dropdown-content').classList.toggle('show');
+            };
+
+            const content = document.createElement('div');
+            content.className = 'dropdown-content';
+
+            const actions = document.createElement('div');
+            actions.className = 'dropdown-actions';
+
+            const selectAllBtn = document.createElement('button');
+            selectAllBtn.type      = 'button';
+            selectAllBtn.textContent = 'Выбрать все';
+            selectAllBtn.onclick   = function (e) {
+                e.stopPropagation();
+                content.querySelectorAll('input[type="checkbox"]').forEach(cb => cb.checked = true);
+                updateDropdownSelection(filterType);
+            };
+
+            const resetAllBtn = document.createElement('button');
+            resetAllBtn.type      = 'button';
+            resetAllBtn.textContent = 'Сбросить';
+            resetAllBtn.className  = 'reset';
+            resetAllBtn.onclick    = function (e) {
+                e.stopPropagation();
+                content.querySelectorAll('input[type="checkbox"]').forEach(cb => cb.checked = false);
+                updateDropdownSelection(filterType);
+            };
+
+            actions.appendChild(selectAllBtn);
+            actions.appendChild(resetAllBtn);
+            content.appendChild(actions);
+
+            items.forEach((item, idx) => {
+                const itemDiv   = document.createElement('div');
+                itemDiv.className = 'dropdown-item';
+
+                const checkbox  = document.createElement('input');
+                checkbox.type   = 'checkbox';
+                checkbox.id     = `${filterType}-${idx}`;
+                checkbox.value = filterType === "period" ? (lastIdx - idx) : idx;
+                checkbox.checked = true;
+                checkbox.onchange = function () { updateDropdownSelection(filterType); };
+
+                const label     = document.createElement('label');
+                label.htmlFor   = `${filterType}-${idx}`;
+                label.textContent = item;
+
+                itemDiv.appendChild(checkbox);
+                itemDiv.appendChild(label);
+                content.appendChild(itemDiv);
+            });
+
+            wrapper.appendChild(button);
+            wrapper.appendChild(content);
+            container.appendChild(wrapper);
+
+            document.addEventListener('click', function (e) {
+                if (!wrapper.contains(e.target)) content.classList.remove('show');
+            });
+        }
+
+        function updateDropdownSelection(filterType) {
+            const containerId = filterType === 'period' ? 'periodFilters' : 'counterpartyFilters';
+            const container   = document.getElementById(containerId);
+            const checkboxes  = container.querySelectorAll('input[type="checkbox"]');
+            const checked     = container.querySelectorAll('input[type="checkbox"]:checked');
+
+            updateDropdownText(containerId, checked, checkboxes.length);
+
+            const selected = Array.from(checked).map(cb => parseInt(cb.value));
+            if (filterType === 'period') {
+                selectedPeriods = selected;
+            } else {
+                selectedCounterparties = selected;
+            }
+            updateCalculation();
+        }
+
+        // ─── Расчёт и рендер таблицы ─────────────────────────────────────────────
+        function updateCalculation() {
+            if (!parsedData) return;
+
+            const periodCheckboxes = document.querySelectorAll('#periodFilters input[type="checkbox"]');
+            selectedPeriods = Array.from(periodCheckboxes).filter(cb => cb.checked).map(cb => parseInt(cb.value));
+
+            const cpCheckboxes = document.querySelectorAll('#counterpartyFilters input[type="checkbox"]');
+            selectedCounterparties = Array.from(cpCheckboxes).filter(cb => cb.checked).map(cb => parseInt(cb.value));
+
+            document.getElementById('selectedPeriods').textContent =
+                selectedPeriods.map(i => parsedData.periods[i]?.date || '').join(', ') || '-';
+
+            document.getElementById('rsoDocuments').textContent =
+                selectedPeriods.map(i => parsedData.rsoDocs[i]).filter(Boolean).join(', ') || '-';
+
+            let totalVolume = 0;
+            selectedPeriods.forEach(i => { totalVolume += parsedData.totalVolumes[i] || 0; });
+            document.getElementById('totalVolume').textContent =
+                totalVolume.toLocaleString('ru-RU', { minimumFractionDigits: 0, maximumFractionDigits: 2 });
+
+            let totalAmount = 0;
+            selectedPeriods.forEach(i => { totalAmount += parsedData.totalAmounts[i] || 0; });
+            document.getElementById('totalAmount').textContent =
+                totalAmount.toLocaleString('ru-RU', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+
+            document.getElementById('totalArea').textContent =
+                (parsedData.totalAreaForDistribution || 0).toLocaleString('ru-RU', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+
+            const tableBody = document.getElementById('calculationTable');
+            tableBody.innerHTML = '';
+
+            let sumArea = 0, sumVol = 0, sumAmt = 0;
+
+            selectedCounterparties.forEach(cpIdx => {
+                const name = parsedData.counterparties[cpIdx];
+                const d    = parsedData.counterpartyData[cpIdx];
+
+                let volume = 0, amount = 0;
+                selectedPeriods.forEach(pIdx => {
+                    volume += d.volumes[pIdx] || 0;
+                    amount += d.amounts[pIdx] || 0;
+                });
+
+                const area = d.area || 0;
+                sumArea += area;
+                sumVol  += volume;
+                sumAmt  += amount;
+
+                const row = document.createElement('tr');
+                row.innerHTML = `
+                    <td>${name}</td>
+                    <td>${area.toLocaleString('ru-RU', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</td>
+                    <td>${volume.toLocaleString('ru-RU', { minimumFractionDigits: 0, maximumFractionDigits: 2 })}</td>
+                    <td>${amount.toLocaleString('ru-RU', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</td>
+                `;
+                tableBody.appendChild(row);
+            });
+
+            const totalRow = document.createElement('tr');
+            totalRow.style.fontWeight = 'bold';
+            totalRow.style.background = '#f0f0f0';
+            totalRow.innerHTML = `
+                <td>Итого</td>
+                <td>${sumArea.toLocaleString('ru-RU', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</td>
+                <td>${sumVol.toLocaleString('ru-RU', { minimumFractionDigits: 0, maximumFractionDigits: 2 })}</td>
+                <td>${sumAmt.toLocaleString('ru-RU', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</td>
+            `;
+            tableBody.appendChild(totalRow);
+            calculationSection.style.display = 'block';
+        }
+
+        // ─── Утилиты ─────────────────────────────────────────────────────────────
+        function showLoader(state) { loaderDiv.style.display = state ? 'block' : 'none'; }
+        function showError(msg)    { errorDiv.textContent = msg; errorDiv.style.display = 'block'; }
+        function hideError()       { errorDiv.style.display = 'none'; }
+    </script>
+</body>
+</html>
