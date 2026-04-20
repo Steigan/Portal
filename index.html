@@ -117,6 +117,10 @@
         let currentIdToken = null;
         let email = '';
 
+        // ─── Элементы DOM ────────────────────────────────────────────────────────
+        const errorDiv           = document.getElementById('error');
+        const loaderDiv          = document.getElementById('loader');
+
         function handleGoogleSignIn(response) {
             const idToken = response.credential;
             let payload;
