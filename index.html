@@ -32,6 +32,13 @@
         #logoutBtn { padding: 6px 14px; background: #f44336; color: white; border: none; border-radius: 4px; cursor: pointer; font-size: 13px; }
         #logoutBtn:hover { background: #d32f2f; }
         #appContent { display: none; }
+        .section {
+            background: white;
+            padding: 20px;
+            margin-bottom: 20px;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
         .error {
             color: #d32f2f;
             padding: 10px;
@@ -49,7 +56,6 @@
     </style>
 </head>
 <body>
-    <h1>Портал</h1>
 
     <div id="loginScreen">
         <div class="login-box">
@@ -90,14 +96,26 @@
     </div>
 
     <div id="appContent">
+        <div class="section">
+<!--            <div class="file-upload">
+                <label for="sheetSelect" style="font-weight:bold; color:#555;">Вид ресурса/лист:</label>
+                <select id="sheetSelect">
+                    <option value="ЭЭ (Юхнина)">ЭЭ (Юхнина)</option>
+                    <option value="ЭЭ" selected>ЭЭ</option>
+                    <option value="ТЭ (без ТН)">ТЭ (без ТН)</option>
+                    <option value="ХВСиВО (c поверх., без Юхнина)">ХВСиВО (c поверх., без Юхнина)</option>
+                </select>
+                <button id="loadBtn">Загрузить / обновить данные</button>
+            </div>
+-->            <div id="loader">⏳ Загрузка данных из таблицы...</div>
+            <div id="error" class="error"></div>
+        </div>
     </div>
 
     <script>
         // ─── Состояние ───────────────────────────────────────────────────────────
         let currentIdToken = null;
-
-        // ─── Элементы DOM ────────────────────────────────────────────────────────
-        const loadBtn            = document.getElementById('loadBtn');
+        let email = '';
 
         function handleGoogleSignIn(response) {
             const idToken = response.credential;
@@ -115,7 +133,9 @@
             document.getElementById('loginError').style.display = 'none';
             document.getElementById('userName').textContent = payload.name || '';
             document.getElementById('userEmail').textContent = payload.email || '';
+            email = payload.email || '';
             if (payload.picture) document.getElementById('userAvatar').src = payload.picture;
+            await load_settings();
         }
 
         function showLoginError(msg) {
@@ -140,8 +160,8 @@
 
         // ─── Обработчики ─────────────────────────────────────────────────────────
         document.getElementById('logoutBtn').addEventListener('click', function() {
+            email = '';
             currentIdToken = null;
-            parsedData = null;
             document.getElementById('loginScreen').style.display = 'flex';
             document.getElementById('userBar').style.display = 'none';
             document.getElementById('appContent').style.display = 'none';
@@ -152,13 +172,11 @@
             }
         });
 
-        loadBtn.addEventListener('click', async function() {
-            const baseUrl = 'https://script.google.com/macros/s/AKfycbxMFw3hO-qegx8A72lSMJuOyNlE4KQGkX62AWREnTY9T4-WC26bVJkLMI9HYZwFjXux/exec';
+        async function load_settings() {
+            const baseUrl = 'https://script.google.com/macros/s/AKfycby06OccwIMKMK88Tdl6b56qW2i6k8hlo2qYtqLSfzWdZH6VpSxp9zo8o5gIa7NZult0tw/exec';
 
-            const sheetName = document.getElementById('sheetSelect').value;
             if (!currentIdToken) { showError('Необходимо войти через Google.'); return; }
 
-            //sessionStorage.setItem('appsScriptUrl', baseUrl);
             hideError();
             showLoader(true);
             this.disabled = true;
@@ -167,7 +185,7 @@
                 // ВАЖНО: обычный form POST, чтобы не было CORS preflight
                 const formData = new URLSearchParams();
                 formData.append('idToken', currentIdToken);
-                formData.append('sheet', sheetName);
+                formData.append('email', sheetName);
 
                 const resp = await fetch(baseUrl, {
                     method: 'POST',
@@ -181,15 +199,18 @@
                     showError(json.forbidden ? '⛔ ' + json.error + '\n\nОбратитесь к администратору.' : json.error);
                     return;
                 }
-                processRawData(json.data, sheetName);
+                showError(json.data);
             } catch(err) {
                 showError('Ошибка загрузки: ' + err.message);
             } finally {
                 showLoader(false);
-                document.getElementById('loadBtn').disabled = false;
             }
         });
 
+        // ─── Утилиты ─────────────────────────────────────────────────────────────
+        function showLoader(state) { loaderDiv.style.display = state ? 'block' : 'none'; }
+        function showError(msg)    { errorDiv.textContent = msg; errorDiv.style.display = 'block'; }
+        function hideError()       { errorDiv.style.display = 'none'; }
     </script>
 </body>
 </html>
