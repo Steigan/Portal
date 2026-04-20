@@ -190,7 +190,6 @@
                 // ВАЖНО: обычный form POST, чтобы не было CORS preflight
                 const formData = new URLSearchParams();
                 formData.append('idToken', currentIdToken);
-                formData.append('email', email);
 
                 const resp = await fetch(baseUrl, {
                     method: 'POST',
@@ -204,7 +203,7 @@
                     showError(json.forbidden ? '⛔ ' + json.error + '\n\nОбратитесь к администратору.' : json.error);
                     return;
                 }
-                showError(json.data);
+                showError(json.settings);
             } catch(err) {
                 showError('Ошибка загрузки: ' + err.message);
             } finally {
