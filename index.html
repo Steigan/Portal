@@ -86,7 +86,6 @@
       }
       body {
         font-family: Arial, sans-serif;
-        max-width: 1200px;
         margin: 0 auto;
         padding: 20px;
         background: #f5f5f5;
@@ -189,6 +188,11 @@
         border-radius: 8px;
         box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
       }
+      .section-text {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+      }
       .error {
         color: #d32f2f;
         padding: 10px;
@@ -253,6 +257,9 @@
 
     <div id="appContent">
       <div class="section">
+        <div id="infoText" class="section-text"></div>
+        <div id="infoHTML"></div>
+        <div"><a href="#">Ссылка</a></div>
         <!--            <div class="file-upload">
                 <label for="sheetSelect" style="font-weight:bold; color:#555;">Вид ресурса/лист:</label>
                 <select id="sheetSelect">
@@ -275,6 +282,8 @@
       // ─── Элементы DOM ────────────────────────────────────────────────────────
       const errorDiv = document.getElementById("error");
       const loaderDiv = document.getElementById("loader");
+      const infoText = document.getElementById("infoText");
+      const infoHTML = document.getElementById("infoHTML");
 
       function handleGoogleSignIn(response) {
         const idToken = response.credential;
@@ -369,7 +378,9 @@
             );
             return;
           }
-          showError(json.settings);
+          const formatted = JSON.stringify(json.settings, null, 4);
+          infoText.textContent = formatted;
+          infoHTML.replaceChildren('<a href="#">Ссылка</a>');
         } catch (err) {
           showError("Ошибка загрузки: " + err.message);
         } finally {
