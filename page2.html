@@ -9,8 +9,12 @@
         font-family: Arial;
         padding: 20px;
       }
-      .loading {
-        color: gray;
+      #loader {
+        display: none;
+        text-align: center;
+        color: #1a73e8;
+        font-weight: bold;
+        padding: 6px 0;
       }
       .error {
         color: red;
@@ -19,7 +23,6 @@
   </head>
   <body>
     <h1>Второе окно</h1>
-    <!-- <div id="status" class="loading">Ожидание авторизации...</div> -->
     <div id="loader">⏳ Загрузка данных из таблицы...</div>
     <div id="error" class="error"></div>
 
@@ -38,6 +41,7 @@
 
       let currentIdToken = null;
       let email = null;
+      let data = null;
 
       async function load_settings() {
         const baseUrl =
@@ -95,10 +99,13 @@
         if (event.data && event.data.type === "AUTHTOKEN") {
           currentIdToken = event.data.token;
           email = event.data.email;
+          data = event.data.data;
           // Используем токен для авторизации в Google API
           //console.log("Авторизован:", email, currentIdToken);
           // Можно делать запросы к Google Apps Script с этим токеном
-          load_settings();
+          //load_settings();
+          const formatted = JSON.stringify(data, null, 4);
+          infoText.textContent = formatted;
         }
       });
       // ─── Утилиты ─────────────────────────────────────────────────────────────
