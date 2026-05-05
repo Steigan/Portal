@@ -457,6 +457,10 @@
         background: var(--color-surface);
         text-align: right;
       }
+      .adjust-input.is-invalid {
+        border-color: #e74c3c;
+        background: #fdf2f2;
+      }
       .amount-cell {
         white-space: nowrap;
         text-align: right;
@@ -804,6 +808,47 @@
         return typeof value === "number" && Number.isFinite(value);
       }
 
+      function evaluateMathExpression(expr) {
+        const cleaned = String(expr || "")
+          .trim()
+          .replace(/\s/g, "");
+        if (!cleaned) return 0;
+        if (!/^[0-9+\-*/().]+$/.test(cleaned)) return NaN;
+        try {
+          const result = new Function("return (" + cleaned + ")")();
+          return typeof result === "number" && Number.isFinite(result)
+            ? result
+            : NaN;
+        } catch {
+          return NaN;
+        }
+      }
+
+      const ADJ_STORAGE_KEY = "ausn_adjustments";
+
+      function loadAllAdjustments() {
+        try {
+          const raw = localStorage.getItem(ADJ_STORAGE_KEY);
+          return raw ? JSON.parse(raw) : {};
+        } catch {
+          return {};
+        }
+      }
+
+      function saveAdjustment(period, taxBaseCode, value) {
+        if (!period || !taxBaseCode) return;
+        const all = loadAllAdjustments();
+        if (!all[period]) all[period] = {};
+        all[period][taxBaseCode] = value;
+        localStorage.setItem(ADJ_STORAGE_KEY, JSON.stringify(all));
+      }
+
+      function getAdjustmentsForPeriod(period) {
+        if (!period) return {};
+        const all = loadAllAdjustments();
+        return all[period] || {};
+      }
+
       function normalizeMultiline(value) {
         return String(value || "")
           .replace(/\r/g, "")
@@ -958,14 +1003,16 @@
         const current = Number(
           row.querySelector("[data-current-total]")?.dataset.currentTotal || 0,
         );
-        const adjustment = Number(
-          row.querySelector("[data-adjustment-input]")?.value || 0,
-        );
+        const adjustmentInput = row.querySelector("[data-adjustment-input]");
+        const adjustment = adjustmentInput
+          ? evaluateMathExpression(adjustmentInput.value)
+          : 0;
+        const safeAdjustment = Number.isNaN(adjustment) ? 0 : adjustment;
         const totalCell = row.querySelector("[data-grand-total]");
         const total = totalCell
           ? Number(totalCell.textContent.replace(/\s/g, "").replace(",", "."))
-          : current + adjustment;
-        return { current, adjustment, total };
+          : current + safeAdjustment;
+        return { current, adjustment: safeAdjustment, total };
       }
 
       function updateDerivedSummaryRow() {
@@ -1078,9 +1125,7 @@
             : `<td>
                 <input
                 class="adjust-input"
-                type="number"
-                inputmode="decimal"
-                step="0.01"
+                type="text"
                 value="0.00"
                 aria-label="Корректировка для ${escapeHtml(taxBaseCode)}"
                 data-adjustment-input
@@ -1113,6 +1158,37 @@
       `);
 
         summaryBody.innerHTML = htmlRows.join("");
+
+        // Загрузка сохраненных значений корректировок для текущего периода
+        const savedAdjustments = getAdjustmentsForPeriod(periodFilter.value);
+        if (Object.keys(savedAdjustments).length) {
+          summaryBody
+            .querySelectorAll("tr[data-summary-row]")
+            .forEach((row) => {
+              const taxBaseCode = row.dataset.taxBaseCode;
+              const savedValue = savedAdjustments[taxBaseCode];
+              if (savedValue === undefined) return;
+
+              const input = row.querySelector("[data-adjustment-input]");
+              if (!input) return;
+
+              input.value = savedValue;
+              const currentCell = row.querySelector("[data-current-total]");
+              const totalCell = row.querySelector("[data-grand-total]");
+              if (!currentCell || !totalCell) return;
+
+              const current = Number(currentCell.dataset.currentTotal || 0);
+              const adjustment = evaluateMathExpression(savedValue);
+
+              if (!Number.isNaN(adjustment)) {
+                input.classList.remove("is-invalid");
+                totalCell.textContent = formatAmount(current + adjustment);
+              } else {
+                input.classList.add("is-invalid");
+              }
+            });
+        }
+
         updateDerivedSummaryRow();
         //summaryMeta.textContent = `Группировок: ${summaryRows.length}`;
         renderCalculatedMetrics();
@@ -1256,10 +1332,19 @@
         const input = event.target.closest("[data-adjustment-input]");
         if (!input) return;
         const row = input.closest("tr");
+        const taxBaseCode = row.dataset.taxBaseCode;
+        const period = periodFilter.value;
+        saveAdjustment(period, taxBaseCode, input.value);
+
         const currentCell = row.querySelector("[data-current-total]");
         const totalCell = row.querySelector("[data-grand-total]");
         const current = Number(currentCell.dataset.currentTotal || 0);
-        const adjustment = Number(input.value || 0);
+        const adjustment = evaluateMathExpression(input.value);
+        if (Number.isNaN(adjustment)) {
+          input.classList.add("is-invalid");
+          return;
+        }
+        input.classList.remove("is-invalid");
         totalCell.textContent = formatAmount(current + adjustment);
         updateDerivedSummaryRow();
         renderCalculatedMetrics();
