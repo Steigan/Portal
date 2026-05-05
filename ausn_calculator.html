@@ -1141,7 +1141,11 @@
         resultMeta.textContent = `Найдено: ${rows.length}`;
       }
 
-      function applyFilters() {
+      function applyRowsFilter() {
+        applyFilters(false);
+      }
+
+      function applyFilters(isRenderSummary = true) {
         const selectedPeriod = periodFilter.value;
         const selectedTaxBase = taxBaseFilter.value;
         const periodRows = selectedPeriod
@@ -1152,7 +1156,7 @@
             ? periodRows.filter((row) => row.taxBaseCode === selectedTaxBase)
             : periodRows;
 
-        renderSummary(periodRows);
+        if (isRenderSummary) renderSummary(periodRows);
         renderRows(filteredRows);
 
         const periodText = selectedPeriod
@@ -1162,7 +1166,6 @@
           selectedTaxBase && selectedTaxBase !== "__all__"
             ? ` и коду налоговой базы ${selectedTaxBase}`
             : "";
-        //statusEl.textContent = `Показаны строки ${periodText}${taxBaseText}: ${filteredRows.length}.`;
       }
 
       function parseOriginalWorkbookRows(sheetRows) {
@@ -1247,7 +1250,7 @@
       }
 
       periodFilter.addEventListener("change", applyFilters);
-      taxBaseFilter.addEventListener("change", applyFilters);
+      taxBaseFilter.addEventListener("change", applyRowsFilter);
 
       summaryBody.addEventListener("input", (event) => {
         const input = event.target.closest("[data-adjustment-input]");
