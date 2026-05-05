@@ -1070,7 +1070,12 @@
           dynamicValue = Math.ceil(expense / 0.85 - income);
         }
 
-        calcIncome3.textContent = formatAmount(metric3).replace(/,00$/, "");
+        const metric3Value = formatAmount(metric3).replace(/,00$/, "");
+        const metric3minus20Value = formatAmount(metric3 - metric20).replace(
+          /,00$/,
+          "",
+        );
+        calcIncome3.textContent = `${metric3Value} (Δ${metric3 > metric20 ? "+" : ""}${metric3minus20Value})`;
         calcIncome8.textContent = formatAmount(metric8).replace(/,00$/, "");
         calcIncomeExpense20.textContent = formatAmount(metric20).replace(
           /,00$/,
@@ -1126,7 +1131,7 @@
                 <input
                 class="adjust-input"
                 type="text"
-                value="0.00"
+                value=""
                 aria-label="Корректировка для ${escapeHtml(taxBaseCode)}"
                 data-adjustment-input
                 data-row-id="${index}"
