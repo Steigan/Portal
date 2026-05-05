@@ -43,7 +43,7 @@
       let email = null;
       let data = null;
 
-      async function load_settings() {
+      async function load_data() {
         const baseUrl =
           "https://script.google.com/macros/s/AKfycby06OccwIMKMK88Tdl6b56qW2i6k8hlo2qYtqLSfzWdZH6VpSxp9zo8o5gIa7NZult0tw/exec";
         //const baseUrl = 'https://script.google.com/macros/s/AKfycbxMFw3hO-qegx8A72lSMJuOyNlE4KQGkX62AWREnTY9T4-WC26bVJkLMI9HYZwFjXux/exec';
@@ -61,6 +61,7 @@
           // ВАЖНО: обычный form POST, чтобы не было CORS preflight
           const formData = new URLSearchParams();
           formData.append("idToken", currentIdToken);
+          formData.append("action", "get_data");
 
           const resp = await fetch(baseUrl, {
             method: "POST",
@@ -78,9 +79,8 @@
             );
             return;
           }
-          const formatted = JSON.stringify(json.settings, null, 4);
+          const formatted = JSON.stringify(json.data, null, 4);
           infoText.textContent = formatted;
-          infoHTML.replaceChildren('<a href="#">Ссылка</a>');
         } catch (err) {
           showError("Ошибка загрузки: " + err.message);
         } finally {
@@ -103,9 +103,9 @@
           // Используем токен для авторизации в Google API
           //console.log("Авторизован:", email, currentIdToken);
           // Можно делать запросы к Google Apps Script с этим токеном
-          //load_settings();
-          const formatted = JSON.stringify(data, null, 4);
-          infoText.textContent = formatted;
+          load_data();
+          /* const formatted = JSON.stringify(data, null, 4);
+          infoText.textContent = formatted;*/
         }
       });
       // ─── Утилиты ─────────────────────────────────────────────────────────────
