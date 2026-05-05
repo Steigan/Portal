@@ -575,7 +575,7 @@
         </div>
 
         <div class="table-wrap" id="tableWrap">
-          <div class="empty-msg">⏳ Загрузка данных из таблицы...</div>
+          <div class="empty-msg">НЕТ ДАННЫХ ЛИБО НАРУШЕН ПОРЯДОК ЗАПУСКА</div>
           <div id="error" class="error"></div>
         </div>
 
@@ -801,7 +801,7 @@
         </div>
 
         <div class="table-wrap" id="divTableWrap">
-          <div class="empty-msg">⏳ Загрузка данных из таблицы...</div>
+          <div class="empty-msg">НЕТ ДАННЫХ ЛИБО НАРУШЕН ПОРЯДОК ЗАПУСКА</div>
         </div>
 
         <div class="divisions-chart-section">
@@ -892,6 +892,11 @@
       var divMonthsCollapsed = false;
 
       async function load_data() {
+        document.getElementById("tableWrap").innerHTML =
+          '<div class="empty-msg">⏳ Загрузка данных из таблицы...</div>';
+        document.getElementById("divTableWrap").innerHTML =
+          '<div class="empty-msg">⏳ Загрузка данных из таблицы...</div>';
+
         const baseUrl =
           "https://script.google.com/macros/s/AKfycby06OccwIMKMK88Tdl6b56qW2i6k8hlo2qYtqLSfzWdZH6VpSxp9zo8o5gIa7NZult0tw/exec";
 
@@ -927,7 +932,14 @@
           }
           //const formatted = JSON.stringify(json.data, null, 4);
 
-          rawData = json.data;
+          var parsed = json.data;
+          if (!parsed || parsed.length === 0) {
+            showError(
+              "Не удалось загрузить данные. Проверьте структуру файла.",
+            );
+            return;
+          }
+          rawData = parsed;
           currentDivisions = [];
           var divSeen = {};
           parsed.forEach(function (r) {
@@ -1185,6 +1197,8 @@
       function renderTable() {
         var wrap = document.getElementById("tableWrap");
         if (rawData.length === 0) {
+          wrap.innerHTML =
+            '<div class="empty-msg">⏳ Загрузка данных из таблицы...</div>';
           return;
         }
         var selYears = getSelectedYears();
@@ -1205,7 +1219,7 @@
         rows.forEach(function (r) {
           if (!lookup[r.item] || !lookup[r.item][r.tag]) return;
           lookup[r.item][r.tag][r.period] =
-            (lookup[r.item][r.tag][r.period] || 0) + r.value_num;
+            (lookup[r.item][r.tag][r.period] || 0) + r.value;
         });
 
         var yearTotals = {};
@@ -1719,6 +1733,8 @@
       function renderDivisionTable() {
         var wrap = document.getElementById("divTableWrap");
         if (rawData.length === 0) {
+          wrap.innerHTML =
+            '<div class="empty-msg">⏳ Загрузка данных из таблицы...</div>';
           return;
         }
         var article = document.getElementById("divArticleFilter").value;
@@ -1745,7 +1761,7 @@
           if (r.item !== article) return;
           if (!lookup[r.division] || !lookup[r.division][r.tag]) return;
           lookup[r.division][r.tag][r.period] =
-            (lookup[r.division][r.tag][r.period] || 0) + r.value_num;
+            (lookup[r.division][r.tag][r.period] || 0) + r.value;
         });
 
         var yearTotals = {};
@@ -1786,7 +1802,7 @@
         rawData.forEach(function (r) {
           if (r.item !== "Доходы") return;
           if (!divRevenue[r.division] || !divRevenue[r.division][r.tag]) return;
-          divRevenue[r.division][r.tag][r.period] = r.value_num;
+          divRevenue[r.division][r.tag][r.period] = r.value;
         });
 
         var divRevenueYearly = {};
@@ -2099,7 +2115,7 @@
           if (r.item !== article) return;
           if (!agg[r.division] || !agg[r.division][r.tag]) return;
           agg[r.division][r.tag][r.period] =
-            (agg[r.division][r.tag][r.period] || 0) + r.value_num;
+            (agg[r.division][r.tag][r.period] || 0) + r.value;
         });
 
         var ratioMode = document.getElementById("divRatioToggle").checked;
@@ -2114,7 +2130,7 @@
         rawData.forEach(function (r) {
           if (r.item !== "Доходы") return;
           if (!divRevenue[r.division] || !divRevenue[r.division][r.tag]) return;
-          divRevenue[r.division][r.tag][r.period] = r.value_num;
+          divRevenue[r.division][r.tag][r.period] = r.value;
         });
 
         var yearlyAverages = {};
@@ -2409,7 +2425,7 @@
           })
           .forEach(function (r) {
             if (!agg[r.tag]) return;
-            agg[r.tag][r.period] = (agg[r.tag][r.period] || 0) + r.value_num;
+            agg[r.tag][r.period] = (agg[r.tag][r.period] || 0) + r.value;
           });
 
         var ratioMode = document.getElementById("ratioToggle").checked;
@@ -2424,7 +2440,7 @@
           .forEach(function (r) {
             if (revenuePerPeriod[r.tag]) {
               revenuePerPeriod[r.tag][r.period] =
-                (revenuePerPeriod[r.tag][r.period] || 0) + r.value_num;
+                (revenuePerPeriod[r.tag][r.period] || 0) + r.value;
             }
           });
 
