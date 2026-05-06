@@ -14,6 +14,16 @@
         background: #f0f2f5;
         color: #222;
       }
+      #disclaimer {
+        color: #1a73e8;
+        font-weight: bold;
+        text-align: center;
+        padding: 20px;
+        font-size: 1rem;
+      }
+      #mainContainer {
+        display: none;
+      }
       .error {
         color: red;
       }
@@ -390,430 +400,438 @@
     </style>
   </head>
   <body>
-    <div class="header">
-      <svg width="32" height="32" viewBox="0 0 32 32" fill="none">
-        <rect width="32" height="32" rx="8" fill="#fff2" />
-        <rect x="4" y="18" width="5" height="10" rx="2" fill="#5bc4f5" />
-        <rect x="12" y="12" width="5" height="16" rx="2" fill="#82e0aa" />
-        <rect x="20" y="6" width="5" height="22" rx="2" fill="#f9ca74" />
-      </svg>
-      <h1>Дашборд</h1>
+    <div id="disclaimer">
+      Этот раздел открывается/обновляется только с главной страницы!
+      <div id="error" class="error"></div>
     </div>
-
-    <div id="tab-container">
-      <div class="tab-bar">
-        <button class="tab-btn active" data-tab="main">Главное</button>
-        <button class="tab-btn" data-tab="divisions">По статьям</button>
+    <div id="mainContainer">
+      <div class="header">
+        <!-- <svg width="32" height="32" viewBox="0 0 32 32" fill="none">
+          <rect width="32" height="32" rx="8" fill="#fff2" />
+          <rect x="4" y="18" width="5" height="10" rx="2" fill="#5bc4f5" />
+          <rect x="12" y="12" width="5" height="16" rx="2" fill="#82e0aa" />
+          <rect x="20" y="6" width="5" height="22" rx="2" fill="#f9ca74" />
+        </svg> -->
+        <h1 id="dashboardTitle">Дашборд</h1>
       </div>
 
-      <div id="tab-main" class="tab-content active">
-        <div class="controls">
-          <div style="position: relative">
-            <label
-              style="
-                font-size: 0.85rem;
-                font-weight: 600;
-                color: #555;
-                margin-right: 6px;
-              "
-              >Подразделение:</label
-            >
+      <div id="tab-container">
+        <div class="tab-bar">
+          <button class="tab-btn active" data-tab="main">Главное</button>
+          <button class="tab-btn" data-tab="divisions">По статьям</button>
+        </div>
+
+        <div id="tab-main" class="tab-content active">
+          <div class="controls">
+            <div style="position: relative">
+              <label
+                style="
+                  font-size: 0.85rem;
+                  font-weight: 600;
+                  color: #555;
+                  margin-right: 6px;
+                "
+                >Подразделение:</label
+              >
+              <button
+                id="divDropBtn"
+                style="
+                  padding: 7px 12px;
+                  border: 1px solid #c5cdd8;
+                  border-radius: 6px;
+                  font-size: 0.9rem;
+                  background: #f8fafc;
+                  min-width: 220px;
+                  text-align: left;
+                  cursor: pointer;
+                  display: inline-flex;
+                  justify-content: space-between;
+                  align-items: center;
+                "
+              >
+                <span id="divBtnLabel">Все подразделения</span>
+                <svg width="12" height="12" viewBox="0 0 12 12" fill="none">
+                  <path
+                    d="M2 4l4 4 4-4"
+                    stroke="#555"
+                    stroke-width="1.5"
+                    stroke-linecap="round"
+                    stroke-linejoin="round"
+                  />
+                </svg>
+              </button>
+              <div
+                id="divDropdown"
+                style="
+                  display: none;
+                  position: absolute;
+                  top: calc(100% + 4px);
+                  left: 0;
+                  z-index: 100;
+                  background: #fff;
+                  border: 1px solid #c5cdd8;
+                  border-radius: 8px;
+                  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.12);
+                  min-width: 260px;
+                  max-height: 320px;
+                  overflow-y: auto;
+                  padding: 6px 0;
+                "
+              >
+                <div
+                  style="
+                    padding: 6px 12px;
+                    border-bottom: 1px solid #eee;
+                    display: flex;
+                    gap: 14px;
+                  "
+                >
+                  <span
+                    id="btnSelAll"
+                    style="
+                      cursor: pointer;
+                      font-size: 0.8rem;
+                      color: #2563a8;
+                      font-weight: 600;
+                    "
+                    >Выбрать все</span
+                  >
+                  <span
+                    id="btnSelNone"
+                    style="
+                      cursor: pointer;
+                      font-size: 0.8rem;
+                      color: #2563a8;
+                      font-weight: 600;
+                    "
+                    >Снять все</span
+                  >
+                </div>
+                <div id="divCheckList"></div>
+              </div>
+            </div>
+            <div style="position: relative">
+              <label
+                style="
+                  font-size: 0.85rem;
+                  font-weight: 600;
+                  color: #555;
+                  margin-right: 6px;
+                "
+                >Год:</label
+              >
+              <button id="yearDropBtn" class="year-drop-btn">
+                <span id="yearBtnLabel">Все годы</span>
+                <svg width="12" height="12" viewBox="0 0 12 12" fill="none">
+                  <path
+                    d="M2 4l4 4 4-4"
+                    stroke="#555"
+                    stroke-width="1.5"
+                    stroke-linecap="round"
+                    stroke-linejoin="round"
+                  />
+                </svg>
+              </button>
+              <div
+                id="yearDropdown"
+                style="
+                  display: none;
+                  position: absolute;
+                  top: calc(100% + 4px);
+                  left: 0;
+                  z-index: 100;
+                  background: #fff;
+                  border: 1px solid #c5cdd8;
+                  border-radius: 8px;
+                  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.12);
+                  min-width: 160px;
+                  padding: 6px 0;
+                "
+              >
+                <div
+                  style="
+                    padding: 6px 12px;
+                    border-bottom: 1px solid #eee;
+                    display: flex;
+                    gap: 14px;
+                  "
+                >
+                  <span
+                    id="btnYearAll"
+                    style="
+                      cursor: pointer;
+                      font-size: 0.8rem;
+                      color: #2563a8;
+                      font-weight: 600;
+                    "
+                    >Выбрать все</span
+                  >
+                  <span
+                    id="btnYearNone"
+                    style="
+                      cursor: pointer;
+                      font-size: 0.8rem;
+                      color: #2563a8;
+                      font-weight: 600;
+                    "
+                    >Снять все</span
+                  >
+                </div>
+                <div id="yearCheckList"></div>
+              </div>
+            </div>
+            <button id="toggleMonths" class="toggle-months-btn" type="button">
+              Свернуть месяцы
+            </button>
+            <label class="ratio-toggle-label">
+              <input type="checkbox" id="ratioToggle" />
+              <span>Показывать отношение к выручке</span>
+            </label>
+          </div>
+
+          <div class="table-wrap" id="tableWrap">
+            <div class="empty-msg">НЕТ ДАННЫХ ЛИБО НАРУШЕН ПОРЯДОК ЗАПУСКА</div>
+          </div>
+
+          <div class="chart-section">
+            <div class="chart-controls">
+              <label
+                for="chartItem"
+                style="font-size: 0.85rem; font-weight: 600; color: #555"
+                >Статья для графика:</label
+              >
+              <select
+                id="chartItem"
+                style="
+                  padding: 7px 12px;
+                  border: 1px solid #c5cdd8;
+                  border-radius: 6px;
+                  font-size: 0.9rem;
+                  background: #f8fafc;
+                  min-width: 240px;
+                "
+              >
+                <option value="">— выберите статью —</option>
+              </select>
+            </div>
+            <div class="chart-box">
+              <div class="chart-box-inner">
+                <canvas id="lineChart"></canvas>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div id="tab-divisions" class="tab-content">
+          <div class="division-controls">
+            <div style="position: relative">
+              <label
+                style="
+                  font-size: 0.85rem;
+                  font-weight: 600;
+                  color: #555;
+                  margin-right: 6px;
+                "
+                >Статья:</label
+              >
+              <select
+                id="divArticleFilter"
+                style="
+                  padding: 7px 12px;
+                  border: 1px solid #c5cdd8;
+                  border-radius: 6px;
+                  font-size: 0.9rem;
+                  background: #f8fafc;
+                  min-width: 220px;
+                "
+              >
+                <option value="">— выберите статью —</option>
+              </select>
+            </div>
+            <div style="position: relative">
+              <label
+                style="
+                  font-size: 0.85rem;
+                  font-weight: 600;
+                  color: #555;
+                  margin-right: 6px;
+                "
+                >Подразделение:</label
+              >
+              <button
+                id="divPanel2DropBtn"
+                style="
+                  padding: 7px 12px;
+                  border: 1px solid #c5cdd8;
+                  border-radius: 6px;
+                  font-size: 0.9rem;
+                  background: #f8fafc;
+                  min-width: 220px;
+                  text-align: left;
+                  cursor: pointer;
+                  display: inline-flex;
+                  justify-content: space-between;
+                  align-items: center;
+                "
+              >
+                <span id="divPanel2BtnLabel">Все подразделения</span>
+                <svg width="12" height="12" viewBox="0 0 12 12" fill="none">
+                  <path
+                    d="M2 4l4 4 4-4"
+                    stroke="#555"
+                    stroke-width="1.5"
+                    stroke-linecap="round"
+                    stroke-linejoin="round"
+                  />
+                </svg>
+              </button>
+              <div
+                id="divPanel2Dropdown"
+                style="
+                  display: none;
+                  position: absolute;
+                  top: calc(100% + 4px);
+                  left: 0;
+                  z-index: 100;
+                  background: #fff;
+                  border: 1px solid #c5cdd8;
+                  border-radius: 8px;
+                  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.12);
+                  min-width: 260px;
+                  max-height: 320px;
+                  overflow-y: auto;
+                  padding: 6px 0;
+                "
+              >
+                <div
+                  style="
+                    padding: 6px 12px;
+                    border-bottom: 1px solid #eee;
+                    display: flex;
+                    gap: 14px;
+                  "
+                >
+                  <span
+                    id="btnPanel2SelAll"
+                    style="
+                      cursor: pointer;
+                      font-size: 0.8rem;
+                      color: #2563a8;
+                      font-weight: 600;
+                    "
+                    >Выбрать все</span
+                  >
+                  <span
+                    id="btnPanel2SelNone"
+                    style="
+                      cursor: pointer;
+                      font-size: 0.8rem;
+                      color: #2563a8;
+                      font-weight: 600;
+                    "
+                    >Снять все</span
+                  >
+                </div>
+                <div id="divPanel2CheckList"></div>
+              </div>
+            </div>
+            <div style="position: relative">
+              <label
+                style="
+                  font-size: 0.85rem;
+                  font-weight: 600;
+                  color: #555;
+                  margin-right: 6px;
+                "
+                >Год:</label
+              >
+              <button id="divYearDropBtn" class="year-drop-btn">
+                <span id="divYearBtnLabel">Все годы</span>
+                <svg width="12" height="12" viewBox="0 0 12 12" fill="none">
+                  <path
+                    d="M2 4l4 4 4-4"
+                    stroke="#555"
+                    stroke-width="1.5"
+                    stroke-linecap="round"
+                    stroke-linejoin="round"
+                  />
+                </svg>
+              </button>
+              <div
+                id="divYearDropdown"
+                style="
+                  display: none;
+                  position: absolute;
+                  top: calc(100% + 4px);
+                  left: 0;
+                  z-index: 100;
+                  background: #fff;
+                  border: 1px solid #c5cdd8;
+                  border-radius: 8px;
+                  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.12);
+                  min-width: 160px;
+                  padding: 6px 0;
+                "
+              >
+                <div
+                  style="
+                    padding: 6px 12px;
+                    border-bottom: 1px solid #eee;
+                    display: flex;
+                    gap: 14px;
+                  "
+                >
+                  <span
+                    id="btnDivYearAll"
+                    style="
+                      cursor: pointer;
+                      font-size: 0.8rem;
+                      color: #2563a8;
+                      font-weight: 600;
+                    "
+                    >Выбрать все</span
+                  >
+                  <span
+                    id="btnDivYearNone"
+                    style="
+                      cursor: pointer;
+                      font-size: 0.8rem;
+                      color: #2563a8;
+                      font-weight: 600;
+                    "
+                    >Снять все</span
+                  >
+                </div>
+                <div id="divYearCheckList"></div>
+              </div>
+            </div>
             <button
-              id="divDropBtn"
-              style="
-                padding: 7px 12px;
-                border: 1px solid #c5cdd8;
-                border-radius: 6px;
-                font-size: 0.9rem;
-                background: #f8fafc;
-                min-width: 220px;
-                text-align: left;
-                cursor: pointer;
-                display: inline-flex;
-                justify-content: space-between;
-                align-items: center;
-              "
+              id="toggleDivMonths"
+              class="toggle-months-btn"
+              type="button"
             >
-              <span id="divBtnLabel">Все подразделения</span>
-              <svg width="12" height="12" viewBox="0 0 12 12" fill="none">
-                <path
-                  d="M2 4l4 4 4-4"
-                  stroke="#555"
-                  stroke-width="1.5"
-                  stroke-linecap="round"
-                  stroke-linejoin="round"
-                />
-              </svg>
+              Свернуть месяцы
             </button>
-            <div
-              id="divDropdown"
-              style="
-                display: none;
-                position: absolute;
-                top: calc(100% + 4px);
-                left: 0;
-                z-index: 100;
-                background: #fff;
-                border: 1px solid #c5cdd8;
-                border-radius: 8px;
-                box-shadow: 0 4px 16px rgba(0, 0, 0, 0.12);
-                min-width: 260px;
-                max-height: 320px;
-                overflow-y: auto;
-                padding: 6px 0;
-              "
-            >
-              <div
-                style="
-                  padding: 6px 12px;
-                  border-bottom: 1px solid #eee;
-                  display: flex;
-                  gap: 14px;
-                "
-              >
-                <span
-                  id="btnSelAll"
-                  style="
-                    cursor: pointer;
-                    font-size: 0.8rem;
-                    color: #2563a8;
-                    font-weight: 600;
-                  "
-                  >Выбрать все</span
-                >
-                <span
-                  id="btnSelNone"
-                  style="
-                    cursor: pointer;
-                    font-size: 0.8rem;
-                    color: #2563a8;
-                    font-weight: 600;
-                  "
-                  >Снять все</span
-                >
+            <label class="ratio-toggle-label">
+              <input type="checkbox" id="divRatioToggle" />
+              <span>Показывать отношение к выручке</span>
+            </label>
+          </div>
+
+          <div class="table-wrap" id="divTableWrap">
+            <div class="empty-msg">НЕТ ДАННЫХ ЛИБО НАРУШЕН ПОРЯДОК ЗАПУСКА</div>
+          </div>
+
+          <div class="divisions-chart-section">
+            <div class="divisions-chart-box">
+              <div class="divisions-chart-box-inner">
+                <canvas id="divisionChart"></canvas>
               </div>
-              <div id="divCheckList"></div>
-            </div>
-          </div>
-          <div style="position: relative">
-            <label
-              style="
-                font-size: 0.85rem;
-                font-weight: 600;
-                color: #555;
-                margin-right: 6px;
-              "
-              >Год:</label
-            >
-            <button id="yearDropBtn" class="year-drop-btn">
-              <span id="yearBtnLabel">Все годы</span>
-              <svg width="12" height="12" viewBox="0 0 12 12" fill="none">
-                <path
-                  d="M2 4l4 4 4-4"
-                  stroke="#555"
-                  stroke-width="1.5"
-                  stroke-linecap="round"
-                  stroke-linejoin="round"
-                />
-              </svg>
-            </button>
-            <div
-              id="yearDropdown"
-              style="
-                display: none;
-                position: absolute;
-                top: calc(100% + 4px);
-                left: 0;
-                z-index: 100;
-                background: #fff;
-                border: 1px solid #c5cdd8;
-                border-radius: 8px;
-                box-shadow: 0 4px 16px rgba(0, 0, 0, 0.12);
-                min-width: 160px;
-                padding: 6px 0;
-              "
-            >
-              <div
-                style="
-                  padding: 6px 12px;
-                  border-bottom: 1px solid #eee;
-                  display: flex;
-                  gap: 14px;
-                "
-              >
-                <span
-                  id="btnYearAll"
-                  style="
-                    cursor: pointer;
-                    font-size: 0.8rem;
-                    color: #2563a8;
-                    font-weight: 600;
-                  "
-                  >Выбрать все</span
-                >
-                <span
-                  id="btnYearNone"
-                  style="
-                    cursor: pointer;
-                    font-size: 0.8rem;
-                    color: #2563a8;
-                    font-weight: 600;
-                  "
-                  >Снять все</span
-                >
-              </div>
-              <div id="yearCheckList"></div>
-            </div>
-          </div>
-          <button id="toggleMonths" class="toggle-months-btn" type="button">
-            Свернуть месяцы
-          </button>
-          <label class="ratio-toggle-label">
-            <input type="checkbox" id="ratioToggle" />
-            <span>Показывать отношение к выручке</span>
-          </label>
-        </div>
-
-        <div class="table-wrap" id="tableWrap">
-          <div class="empty-msg">НЕТ ДАННЫХ ЛИБО НАРУШЕН ПОРЯДОК ЗАПУСКА</div>
-          <div id="error" class="error"></div>
-        </div>
-
-        <div class="chart-section">
-          <div class="chart-controls">
-            <label
-              for="chartItem"
-              style="font-size: 0.85rem; font-weight: 600; color: #555"
-              >Статья для графика:</label
-            >
-            <select
-              id="chartItem"
-              style="
-                padding: 7px 12px;
-                border: 1px solid #c5cdd8;
-                border-radius: 6px;
-                font-size: 0.9rem;
-                background: #f8fafc;
-                min-width: 240px;
-              "
-            >
-              <option value="">— выберите статью —</option>
-            </select>
-          </div>
-          <div class="chart-box">
-            <div class="chart-box-inner">
-              <canvas id="lineChart"></canvas>
-            </div>
-          </div>
-        </div>
-      </div>
-
-      <div id="tab-divisions" class="tab-content">
-        <div class="division-controls">
-          <div style="position: relative">
-            <label
-              style="
-                font-size: 0.85rem;
-                font-weight: 600;
-                color: #555;
-                margin-right: 6px;
-              "
-              >Статья:</label
-            >
-            <select
-              id="divArticleFilter"
-              style="
-                padding: 7px 12px;
-                border: 1px solid #c5cdd8;
-                border-radius: 6px;
-                font-size: 0.9rem;
-                background: #f8fafc;
-                min-width: 220px;
-              "
-            >
-              <option value="">— выберите статью —</option>
-            </select>
-          </div>
-          <div style="position: relative">
-            <label
-              style="
-                font-size: 0.85rem;
-                font-weight: 600;
-                color: #555;
-                margin-right: 6px;
-              "
-              >Подразделение:</label
-            >
-            <button
-              id="divPanel2DropBtn"
-              style="
-                padding: 7px 12px;
-                border: 1px solid #c5cdd8;
-                border-radius: 6px;
-                font-size: 0.9rem;
-                background: #f8fafc;
-                min-width: 220px;
-                text-align: left;
-                cursor: pointer;
-                display: inline-flex;
-                justify-content: space-between;
-                align-items: center;
-              "
-            >
-              <span id="divPanel2BtnLabel">Все подразделения</span>
-              <svg width="12" height="12" viewBox="0 0 12 12" fill="none">
-                <path
-                  d="M2 4l4 4 4-4"
-                  stroke="#555"
-                  stroke-width="1.5"
-                  stroke-linecap="round"
-                  stroke-linejoin="round"
-                />
-              </svg>
-            </button>
-            <div
-              id="divPanel2Dropdown"
-              style="
-                display: none;
-                position: absolute;
-                top: calc(100% + 4px);
-                left: 0;
-                z-index: 100;
-                background: #fff;
-                border: 1px solid #c5cdd8;
-                border-radius: 8px;
-                box-shadow: 0 4px 16px rgba(0, 0, 0, 0.12);
-                min-width: 260px;
-                max-height: 320px;
-                overflow-y: auto;
-                padding: 6px 0;
-              "
-            >
-              <div
-                style="
-                  padding: 6px 12px;
-                  border-bottom: 1px solid #eee;
-                  display: flex;
-                  gap: 14px;
-                "
-              >
-                <span
-                  id="btnPanel2SelAll"
-                  style="
-                    cursor: pointer;
-                    font-size: 0.8rem;
-                    color: #2563a8;
-                    font-weight: 600;
-                  "
-                  >Выбрать все</span
-                >
-                <span
-                  id="btnPanel2SelNone"
-                  style="
-                    cursor: pointer;
-                    font-size: 0.8rem;
-                    color: #2563a8;
-                    font-weight: 600;
-                  "
-                  >Снять все</span
-                >
-              </div>
-              <div id="divPanel2CheckList"></div>
-            </div>
-          </div>
-          <div style="position: relative">
-            <label
-              style="
-                font-size: 0.85rem;
-                font-weight: 600;
-                color: #555;
-                margin-right: 6px;
-              "
-              >Год:</label
-            >
-            <button id="divYearDropBtn" class="year-drop-btn">
-              <span id="divYearBtnLabel">Все годы</span>
-              <svg width="12" height="12" viewBox="0 0 12 12" fill="none">
-                <path
-                  d="M2 4l4 4 4-4"
-                  stroke="#555"
-                  stroke-width="1.5"
-                  stroke-linecap="round"
-                  stroke-linejoin="round"
-                />
-              </svg>
-            </button>
-            <div
-              id="divYearDropdown"
-              style="
-                display: none;
-                position: absolute;
-                top: calc(100% + 4px);
-                left: 0;
-                z-index: 100;
-                background: #fff;
-                border: 1px solid #c5cdd8;
-                border-radius: 8px;
-                box-shadow: 0 4px 16px rgba(0, 0, 0, 0.12);
-                min-width: 160px;
-                padding: 6px 0;
-              "
-            >
-              <div
-                style="
-                  padding: 6px 12px;
-                  border-bottom: 1px solid #eee;
-                  display: flex;
-                  gap: 14px;
-                "
-              >
-                <span
-                  id="btnDivYearAll"
-                  style="
-                    cursor: pointer;
-                    font-size: 0.8rem;
-                    color: #2563a8;
-                    font-weight: 600;
-                  "
-                  >Выбрать все</span
-                >
-                <span
-                  id="btnDivYearNone"
-                  style="
-                    cursor: pointer;
-                    font-size: 0.8rem;
-                    color: #2563a8;
-                    font-weight: 600;
-                  "
-                  >Снять все</span
-                >
-              </div>
-              <div id="divYearCheckList"></div>
-            </div>
-          </div>
-          <button id="toggleDivMonths" class="toggle-months-btn" type="button">
-            Свернуть месяцы
-          </button>
-          <label class="ratio-toggle-label">
-            <input type="checkbox" id="divRatioToggle" />
-            <span>Показывать отношение к выручке</span>
-          </label>
-        </div>
-
-        <div class="table-wrap" id="divTableWrap">
-          <div class="empty-msg">НЕТ ДАННЫХ ЛИБО НАРУШЕН ПОРЯДОК ЗАПУСКА</div>
-        </div>
-
-        <div class="divisions-chart-section">
-          <div class="divisions-chart-box">
-            <div class="divisions-chart-box-inner">
-              <canvas id="divisionChart"></canvas>
             </div>
           </div>
         </div>
       </div>
     </div>
-
     <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.2/dist/chart.umd.min.js"></script>
 
     <script>
@@ -892,10 +910,10 @@
       var divMonthsCollapsed = false;
 
       async function load_data() {
-        document.getElementById("tableWrap").innerHTML =
-          '<div class="empty-msg">⏳ Загрузка данных из таблицы...</div>';
-        document.getElementById("divTableWrap").innerHTML =
-          '<div class="empty-msg">⏳ Загрузка данных из таблицы...</div>';
+        document.title = data.label;
+        document.getElementById("dashboardTitle").innerText = data.label;
+        document.getElementById("disclaimer").innerText =
+          "⏳ Загрузка данных из таблицы...";
 
         const baseUrl =
           "https://script.google.com/macros/s/AKfycby06OccwIMKMK88Tdl6b56qW2i6k8hlo2qYtqLSfzWdZH6VpSxp9zo8o5gIa7NZult0tw/exec";
@@ -971,7 +989,9 @@
         } catch (err) {
           showError("Ошибка загрузки: " + err.message);
         } finally {
-          showLoader(false);
+          //showLoader(false);
+          document.getElementById("disclaimer").style.display = "none";
+          document.getElementById("mainContainer").style.display = "block";
         }
       }
 
