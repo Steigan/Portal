@@ -913,6 +913,7 @@
           const formData = new URLSearchParams();
           formData.append("idToken", currentIdToken);
           formData.append("action", "get_data");
+          formData.append("id", data.id);
 
           const resp = await fetch(baseUrl, {
             method: "POST",
