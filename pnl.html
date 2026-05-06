@@ -1530,7 +1530,7 @@
           var sel = document.getElementById("chartItem");
           if (!sel) return;
           for (var i = 0; i < sel.options.length; i++) {
-            if (sel.options[i].value === item) {
+            if (sel.options[i].value.replace(/^[ -]+/, "") === item) {
               sel.selectedIndex = i;
               break;
             }
