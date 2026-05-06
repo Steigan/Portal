@@ -1,7 +1,7 @@
 <!doctype html>
 <html>
   <head>
-    <title>Дашборд</title>
+    <title>Спагетти-хаос от разных ИИ</title>
     <script src="https://accounts.google.com/gsi/client" async defer></script>
     <style>
       * {
@@ -986,12 +986,12 @@
           renderChart();
           renderDivisionTable();
           renderDivisionChart();
+          document.getElementById("disclaimer").style.display = "none";
+          document.getElementById("mainContainer").style.display = "block";
         } catch (err) {
           showError("Ошибка загрузки: " + err.message);
         } finally {
           //showLoader(false);
-          document.getElementById("disclaimer").style.display = "none";
-          document.getElementById("mainContainer").style.display = "block";
         }
       }
 
@@ -1456,7 +1456,9 @@
         .addEventListener("click", function (e) {
           var cell = e.target.closest("td.item-name");
           if (!cell) return;
-          var item = cell.getAttribute("data-item") || cell.textContent.trim();
+          var item = (
+            cell.getAttribute("data-item") || cell.textContent.trim()
+          ).lstrip(" -");
           var sel = document.getElementById("chartItem");
           if (!sel) return;
           for (var i = 0; i < sel.options.length; i++) {
