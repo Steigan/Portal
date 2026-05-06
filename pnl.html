@@ -24,9 +24,6 @@
       #mainContainer {
         display: none;
       }
-      .error {
-        color: red;
-      }
       .header {
         background: #1a3a5c;
         color: #fff;
@@ -402,7 +399,6 @@
   <body>
     <div id="disclaimer">
       Этот раздел открывается/обновляется только с главной страницы!
-      <div id="error" class="error"></div>
     </div>
     <div id="mainContainer">
       <div class="header">
@@ -835,7 +831,7 @@
     <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.2/dist/chart.umd.min.js"></script>
 
     <script>
-      const errorDiv = document.getElementById("error");
+      const disclaimerDiv = document.getElementById("disclaimer");
 
       let currentIdToken = null;
       let email = null;
@@ -912,8 +908,7 @@
       async function load_data() {
         document.title = data.label;
         document.getElementById("dashboardTitle").innerText = data.label;
-        document.getElementById("disclaimer").innerText =
-          "⏳ Загрузка данных из таблицы...";
+        disclaimerDiv.innerText = "⏳ Загрузка данных из таблицы...";
 
         const baseUrl =
           "https://script.google.com/macros/s/AKfycby06OccwIMKMK88Tdl6b56qW2i6k8hlo2qYtqLSfzWdZH6VpSxp9zo8o5gIa7NZult0tw/exec";
@@ -986,7 +981,7 @@
           renderChart();
           renderDivisionTable();
           renderDivisionChart();
-          document.getElementById("disclaimer").style.display = "none";
+          disclaimerDiv.style.display = "none";
           document.getElementById("mainContainer").style.display = "block";
         } catch (err) {
           showError("Ошибка загрузки: " + err.message);
@@ -1012,11 +1007,11 @@
       });
       // ─── Утилиты ─────────────────────────────────────────────────────────────
       function showError(msg) {
-        errorDiv.textContent = msg;
-        errorDiv.style.display = "block";
+        disclaimerDiv.textContent = msg;
+        //disclaimerDiv.style.display = "block";
       }
       function hideError() {
-        errorDiv.style.display = "none";
+        //disclaimerDiv.style.display = "none";
       }
       // ─── Дашборд ─────────────────────────────────────────────────────────────
       // --- Tab navigation ---
@@ -1458,7 +1453,7 @@
           if (!cell) return;
           var item = (
             cell.getAttribute("data-item") || cell.textContent.trim()
-          ).lstrip(" -");
+          ).replace(/^[ -]+/, "");
           var sel = document.getElementById("chartItem");
           if (!sel) return;
           for (var i = 0; i < sel.options.length; i++) {
