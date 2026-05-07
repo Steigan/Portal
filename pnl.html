@@ -1020,7 +1020,6 @@
             });
           rawData = parsed;
           states = json.states;
-          //    (item.level > 0 ? "--".repeat(item.level - 1) + " " : "") +
           selectStates = states.map(
             (item) => "\u00A0".repeat((item.level - 1) * 3) + item.label,
           );
@@ -1662,6 +1661,10 @@
         });
 
       function buildDivYearCheckList() {
+        var firstYear =
+          currentYears.length > 2
+            ? currentYears[currentYears.length - 2]
+            : currentYears[0];
         var list = document.getElementById("divYearCheckList");
         list.innerHTML = "";
         currentYears.forEach(function (y) {
@@ -1676,7 +1679,7 @@
           });
           var cb = document.createElement("input");
           cb.type = "checkbox";
-          cb.value = y;
+          cb.value = y >= firstYear;
           cb.checked = true;
           cb.addEventListener("change", function () {
             updateDivYearBtnLabel();
@@ -1846,9 +1849,7 @@
             '<div class="empty-msg">Выберите статью для отображения данных</div>';
           return;
         }
-        if (state.startsWith("-")) {
-          state = state.substring(state.indexOf(" ") + 1);
-        }
+        state = state.replace(/^[\u00A0]+/, "");
         var selYears = getSelectedDivYears();
         var years = selYears.length > 0 ? selYears : currentYears;
         var selDivisions = getSelectedPanel2Divisions();
@@ -2192,9 +2193,7 @@
           divisionChartInstance = null;
         }
         if (!state || rawData.length === 0) return;
-        if (state.startsWith("-")) {
-          state = state.substring(state.indexOf(" ") + 1);
-        }
+        state = state.replace(/^[\u00A0]+/, "");
 
         var selYears = getSelectedDivYears();
         var years = selYears.length > 0 ? selYears : currentYears.slice();
