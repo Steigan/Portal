@@ -917,6 +917,8 @@
       let email = null;
       let data = null;
 
+      let selectStates = [];
+
       var ITEMS = [
         "Доходы",
         "Расходы",
@@ -1047,6 +1049,29 @@
             });
           rawData = parsed;
           states = json.states;
+          selectStates = states.map(
+            (item) =>
+              (item.level > 0 ? "--" * item.level + " " : "") + item.label,
+          );
+
+          // --- populate chart item select ---
+          var chartSel = document.getElementById("chartItem");
+          selectStates.forEach(function (item) {
+            var o = document.createElement("option");
+            o.value = item;
+            o.textContent = item;
+            chartSel.appendChild(o);
+          });
+
+          // --- populate division article filter ---
+          var divArticleSel = document.getElementById("divArticleFilter");
+          selectStates.forEach(function (item) {
+            var o = document.createElement("option");
+            o.value = item;
+            o.textContent = item;
+            divArticleSel.appendChild(o);
+          });
+
           currentDivisions = [];
           var divSeen = {};
           parsed.forEach(function (r) {
@@ -1148,22 +1173,22 @@
 
       // --- populate chart item select ---
       var chartSel = document.getElementById("chartItem");
-      ITEMS.forEach(function (item) {
+      /*selectStates.forEach(function (item) {
         var o = document.createElement("option");
         o.value = item;
         o.textContent = item;
         chartSel.appendChild(o);
-      });
+      });*/
       chartSel.addEventListener("change", renderChart);
 
       // --- populate division article filter ---
       var divArticleSel = document.getElementById("divArticleFilter");
-      ITEMS.forEach(function (item) {
+      /*selectStates.forEach(function (item) {
         var o = document.createElement("option");
         o.value = item;
         o.textContent = item;
         divArticleSel.appendChild(o);
-      });
+      });*/
       divArticleSel.addEventListener("change", function () {
         renderDivisionTable();
         renderDivisionChart();
