@@ -1572,8 +1572,8 @@
 
       function buildYearCheckList() {
         var firstYear =
-          currentYears.length() > 2
-            ? currentYears[currentYears.length() - 2]
+          currentYears.length > 2
+            ? currentYears[currentYears.length - 2]
             : currentYears[0];
         var list = document.getElementById("yearCheckList");
         list.innerHTML = "";
