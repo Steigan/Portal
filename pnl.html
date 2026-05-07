@@ -187,6 +187,13 @@
       .table-wrap {
         padding: 24px 30px;
         overflow-x: auto;
+        width: 100%;
+        min-width: 800px;
+        max-width: 100vw;
+        max-height: 80vh;
+        overflow-x: auto;
+        overflow-y: auto;
+        box-sizing: border-box;
       }
       table {
         border-collapse: collapse;
@@ -1679,8 +1686,8 @@
           });
           var cb = document.createElement("input");
           cb.type = "checkbox";
-          cb.value = y >= firstYear;
-          cb.checked = true;
+          cb.value = y;
+          cb.checked = y >= firstYear;
           cb.addEventListener("change", function () {
             updateDivYearBtnLabel();
             renderDivisionTable();
