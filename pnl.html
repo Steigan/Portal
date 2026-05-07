@@ -1026,6 +1026,8 @@
             );
             return;
           }
+          document.getElementById("dashboardTitle").innerText =
+            `${data.label} (${json.last_update})`;
           rawData = parsed;
           currentDivisions = [];
           var divSeen = {};
