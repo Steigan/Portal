@@ -1051,7 +1051,8 @@
           states = json.states;
           selectStates = states.map(
             (item) =>
-              (item.level > 0 ? "--" * item.level + " " : "") + item.label,
+              (item.level > 0 ? "--".repeat(item.level - 1) + " " : "") +
+              item.label,
           );
 
           // --- populate chart item select ---
