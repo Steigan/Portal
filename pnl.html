@@ -1051,7 +1051,7 @@
           states = json.states;
           //    (item.level > 0 ? "--".repeat(item.level - 1) + " " : "") +
           selectStates = states.map(
-            (item) => "&nbsp;&nbsp;&nbsp;".repeat(item.level - 1) + item.label,
+            (item) => "   ".repeat(item.level - 1) + item.label,
           );
 
           // --- populate chart item select ---
@@ -1571,11 +1571,11 @@
           if (!cell) return;
           var item = (
             cell.getAttribute("data-item") || cell.textContent.trim()
-          ).replace("&nbsp;", ""); // /^[ -]+/
+          ).replace(/^[ -]+/, "");
           var sel = document.getElementById("chartItem");
           if (!sel) return;
           for (var i = 0; i < sel.options.length; i++) {
-            if (sel.options[i].value.replace("&nbsp;", "") === item) {
+            if (sel.options[i].value.replace(/^[ -]+/, "") === item) {
               sel.selectedIndex = i;
               break;
             }
