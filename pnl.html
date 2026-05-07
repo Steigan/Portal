@@ -482,6 +482,7 @@
           <rect x="20" y="6" width="5" height="22" rx="2" fill="#f9ca74" />
         </svg> -->
         <h1 id="dashboardTitle">Дашборд</h1>
+        <div id="lastUpdate"></div>
       </div>
 
       <div id="tab-container">
@@ -1026,8 +1027,16 @@
             );
             return;
           }
-          document.getElementById("dashboardTitle").innerText =
-            `${data.label} (${json.last_update})`;
+          document.getElementById("lastUpdate").innerText =
+            "Обновлено: " +
+            json.last_update.toLocaleString("ru-RU", {
+              day: "2-digit",
+              month: "2-digit",
+              year: "4-digit",
+              hour: "2-digit",
+              minute: "2-digit",
+              hour12: false,
+            });
           rawData = parsed;
           currentDivisions = [];
           var divSeen = {};
