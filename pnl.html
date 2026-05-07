@@ -711,7 +711,7 @@
                 >Статья:</label
               >
               <select
-                id="divArticleFilter"
+                id="divStateFilter"
                 style="
                   padding: 7px 12px;
                   border: 1px solid #c5cdd8;
@@ -918,37 +918,8 @@
       let data = null;
 
       let selectStates = [];
+      let tableStates = [];
 
-      var ITEMS = [
-        "Доходы",
-        "Расходы",
-        "- Себестоимость продукции",
-        "- Контролируемые расходы",
-        "-- Оплата труда персонала",
-        "-- Материальная помощь",
-        "-- Оплата труда технический персонал",
-        "-- Расходы на персонал",
-        "--- Регистрация сотрудников в УФМС",
-        "--- Аренда квартир для персонала",
-        "--- Коммандировочные расходы",
-        "-- Коммунальные расходы",
-        "-- Расходы на связь и почту",
-        "-- IT услуги и ПО",
-        "-- Охрана",
-        "-- Обслуживание и ремонт",
-        "-- Расходы на рекламу и маркетинг",
-        "-- Посуда",
-        "-- Хозяйственные расходы",
-        "-- Транспортные расходы, кроме доставки продуктов",
-        "-- Содержание автотранспорта",
-        "-- Прочие контролируемые расходы",
-        "- Неконтролируемые расходы",
-        "-- Аренда",
-        "-- Банковские услуги",
-        "EBITDA",
-        "Налоги",
-        "Прибыль",
-      ];
       var MONTH_NAMES = [
         "Янв",
         "Фев",
@@ -1053,6 +1024,7 @@
           selectStates = states.map(
             (item) => "\u00A0".repeat((item.level - 1) * 3) + item.label,
           );
+          tableStates = selectStates;
 
           // --- populate chart item select ---
           var chartSel = document.getElementById("chartItem");
@@ -1063,13 +1035,13 @@
             chartSel.appendChild(o);
           });
 
-          // --- populate division article filter ---
-          var divArticleSel = document.getElementById("divArticleFilter");
+          // --- populate division state filter ---
+          var divStateSel = document.getElementById("divStateFilter");
           selectStates.forEach(function (item) {
             var o = document.createElement("option");
             o.value = item;
             o.textContent = item;
-            divArticleSel.appendChild(o);
+            divStateSel.appendChild(o);
           });
 
           currentDivisions = [];
@@ -1181,15 +1153,15 @@
       });*/
       chartSel.addEventListener("change", renderChart);
 
-      // --- populate division article filter ---
-      var divArticleSel = document.getElementById("divArticleFilter");
+      // --- populate division state filter ---
+      var divStateSel = document.getElementById("divStateFilter");
       /*selectStates.forEach(function (item) {
         var o = document.createElement("option");
         o.value = item;
         o.textContent = item;
-        divArticleSel.appendChild(o);
+        divStateSel.appendChild(o);
       });*/
-      divArticleSel.addEventListener("change", function () {
+      divStateSel.addEventListener("change", function () {
         renderDivisionTable();
         renderDivisionChart();
       });
@@ -1340,11 +1312,8 @@
         var rows = getFilteredRows();
 
         var lookup = {};
-        ITEMS.forEach(function (item_ori) {
-          var item = item_ori;
-          if (item.startsWith("-")) {
-            item = item.substring(item.indexOf(" ") + 1);
-          }
+        tableStates.forEach(function (item_ori) {
+          var item = item_ori.replace(/^[\u00A0]+/, "");
           lookup[item] = {};
           years.forEach(function (y) {
             lookup[item][y] = {};
@@ -1357,11 +1326,8 @@
         });
 
         var yearTotals = {};
-        ITEMS.forEach(function (item_ori) {
-          var item = item_ori;
-          if (item.startsWith("-")) {
-            item = item.substring(item.indexOf(" ") + 1);
-          }
+        tableStates.forEach(function (item_ori) {
+          var item = item_ori.replace(/^[\u00A0]+/, "");
           yearTotals[item] = {};
           years.forEach(function (y) {
             var s = 0;
@@ -1416,11 +1382,8 @@
         });
         h += "</tr></thead><tbody>";
 
-        ITEMS.forEach(function (item_ori) {
-          var item = item_ori;
-          if (item.startsWith("-")) {
-            item = item.substring(item.indexOf(" ") + 1);
-          }
+        tableStates.forEach(function (item_ori) {
+          var item = item_ori.replace(/^[\u00A0]+/, "");
           h +=
             '<tr class=\"item-row ' +
             (SECTION_CLASS[item] || "") +
@@ -1608,6 +1571,10 @@
         });
 
       function buildYearCheckList() {
+        var firstYear =
+          currentYears.length() > 2
+            ? currentYears[currentYears.length() - 2]
+            : currentYears[0];
         var list = document.getElementById("yearCheckList");
         list.innerHTML = "";
         currentYears.forEach(function (y) {
@@ -1623,7 +1590,7 @@
           var cb = document.createElement("input");
           cb.type = "checkbox";
           cb.value = y;
-          cb.checked = true;
+          cb.checked = y >= firstYear;
           cb.addEventListener("change", function () {
             updateYearBtnLabel();
             renderTable();
@@ -1873,14 +1840,14 @@
             '<div class="empty-msg">⏳ Загрузка данных из таблицы...</div>';
           return;
         }
-        var article = document.getElementById("divArticleFilter").value;
-        if (!article) {
+        var state = document.getElementById("divStateFilter").value;
+        if (!state) {
           wrap.innerHTML =
             '<div class="empty-msg">Выберите статью для отображения данных</div>';
           return;
         }
-        if (article.startsWith("-")) {
-          article = article.substring(article.indexOf(" ") + 1);
+        if (state.startsWith("-")) {
+          state = state.substring(state.indexOf(" ") + 1);
         }
         var selYears = getSelectedDivYears();
         var years = selYears.length > 0 ? selYears : currentYears;
@@ -1894,7 +1861,7 @@
           });
         });
         rawData.forEach(function (r) {
-          if (r.item !== article) return;
+          if (r.item !== state) return;
           if (!lookup[r.division] || !lookup[r.division][r.tag]) return;
           lookup[r.division][r.tag][r.period] =
             (lookup[r.division][r.tag][r.period] || 0) + r.value;
@@ -2217,16 +2184,16 @@
 
       // --- Division Chart ---
       function renderDivisionChart() {
-        var article = document.getElementById("divArticleFilter").value;
+        var state = document.getElementById("divStateFilter").value;
         var canvas = document.getElementById("divisionChart");
         var ctx = canvas.getContext("2d");
         if (divisionChartInstance) {
           divisionChartInstance.destroy();
           divisionChartInstance = null;
         }
-        if (!article || rawData.length === 0) return;
-        if (article.startsWith("-")) {
-          article = article.substring(article.indexOf(" ") + 1);
+        if (!state || rawData.length === 0) return;
+        if (state.startsWith("-")) {
+          state = state.substring(state.indexOf(" ") + 1);
         }
 
         var selYears = getSelectedDivYears();
@@ -2248,7 +2215,7 @@
           });
         });
         rawData.forEach(function (r) {
-          if (r.item !== article) return;
+          if (r.item !== state) return;
           if (!agg[r.division] || !agg[r.division][r.tag]) return;
           agg[r.division][r.tag][r.period] =
             (agg[r.division][r.tag][r.period] || 0) + r.value;
@@ -2361,7 +2328,7 @@
                 },
                 title: {
                   display: true,
-                  text: article,
+                  text: state,
                   font: { size: 14, weight: "600" },
                   color: "#1a3a5c",
                   padding: { bottom: 12 },
@@ -2483,7 +2450,7 @@
                 },
                 title: {
                   display: true,
-                  text: article,
+                  text: state,
                   font: { size: 14, weight: "600" },
                   color: "#1a3a5c",
                   padding: { bottom: 12 },
@@ -2544,9 +2511,7 @@
           chartInstance = null;
         }
         if (!item || rawData.length === 0) return;
-        if (item.startsWith("-")) {
-          item = item.substring(item.indexOf(" ") + 1);
-        }
+        item = item.replace(/^[\u00A0]+/, "");
 
         var selYears = getSelectedYears();
         var years = selYears.length > 0 ? selYears : currentYears;
