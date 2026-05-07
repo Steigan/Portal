@@ -978,6 +978,7 @@
       ];
 
       var rawData = [];
+      var states = [];
       var currentDivisions = [];
       var currentYears = [];
       var chartInstance = null;
@@ -1045,6 +1046,7 @@
               timeZone: "Europe/Moscow",
             });
           rawData = parsed;
+          states = json.states;
           currentDivisions = [];
           var divSeen = {};
           parsed.forEach(function (r) {
