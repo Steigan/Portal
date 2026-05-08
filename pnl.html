@@ -523,7 +523,9 @@
       <div id="tab-container">
         <div class="tab-bar">
           <button class="tab-btn active" data-tab="main">Главное</button>
-          <button class="tab-btn" data-tab="divisions">По статьям</button>
+          <button class="tab-btn" data-tab="divisions">
+            По подразделениям
+          </button>
         </div>
 
         <div id="tab-main" class="tab-content active">
@@ -2266,7 +2268,7 @@
           var vals = [];
           for (var m = 1; m <= 12; m++) {
             var sum = 0;
-            selDivisions.forEach(function (d) {
+            selDivisions.forEach(function (div) {
               if (agg[div][y][m] !== undefined) sum += agg[d][y][m];
             });
             agg["Всего"][y][m] = sum;
