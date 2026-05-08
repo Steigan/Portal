@@ -100,7 +100,7 @@
       .header {
         background: #1a3a5c;
         color: #fff;
-        padding: 12px 30px;
+        padding: 14px 30px;
         display: flex;
         align-items: center;
         gap: 16px;
@@ -186,7 +186,7 @@
         border-color: #1a3a5c;
       }
       .table-wrap-container {
-        padding: 18px 20px;
+        padding: 20px 30px;
         display: flex;
         width: 100%;
         min-width: 800px;
@@ -344,7 +344,7 @@
         font-size: 1rem;
       }
       .chart-section {
-        padding: 18px 20px;
+        padding: 20px 30px;
       }
       .chart-section h2 {
         font-size: 1rem;
@@ -466,7 +466,7 @@
         flex-wrap: wrap;
       }
       .divisions-chart-section {
-        padding: 24px 30px 32px;
+        padding: 20px 30px;
       }
       .divisions-chart-box {
         background: #fff;
@@ -1109,6 +1109,7 @@
           renderTable();
           renderChart();
           renderDivisionTable();
+          chartVisibilityState = new Set(currentDivisions);
           renderDivisionChart();
           disclaimerDiv.style.display = "none";
           document.getElementById("mainContainer").style.display = "block";
