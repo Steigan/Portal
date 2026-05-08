@@ -1493,8 +1493,10 @@
             }
             var tot = Math.round(yearTotals[item][y]);
             var tcls = tot > 0 ? "pos" : tot < 0 ? "neg" : "zero";
-            if (ratioMode && revenuePerYear[y] !== 0) {
-              var pctTot = (tot / revenuePerYear[y]) * 100;
+            if (ratioMode) {
+              var pctTot = "—";
+              if (revenuePerYear[y] !== 0)
+                pctTot = ((tot / revenuePerYear[y]) * 100).toFixed(1);
               h +=
                 '<td class="num year-total-col ' +
                 tcls +
@@ -2017,9 +2019,7 @@
               var tdCls = "num month-col year-" + y + sep;
               if (
                 v === undefined ||
-                (ratioMode &&
-                  (divRevenue[div][y][m] === undefined ||
-                    divRevenue[div][y][m] === 0))
+                (ratioMode && divRevenue[div][y][m] === 0)
               ) {
                 h +=
                   '<td class="' +
@@ -2076,15 +2076,17 @@
             }
             var tot = Math.round(yearTotals[div][y]);
             var tcls = tot > 0 ? "pos" : tot < 0 ? "neg" : "zero";
-            if (ratioMode && divRevenueYearly[div][y] !== undefined && divRevenueYearly[div][y] !== 0) {
-              var pctTot = (tot / divRevenueYearly[div][y]) * 100;
+            if (ratioMode) {
+              var pctTot = "—";
+              if (divRevenueYearly[div][y] !== 0)
+                pctTot = ((tot / divRevenueYearly[div][y]) * 100).toFixed(1);
               h +=
                 '<td class="num year-total-col ' +
                 tcls +
                 '" data-year="' +
                 y +
                 '" style="font-weight:700;background:#f0f6ff;">' +
-                pctTot.toFixed(1) +
+                pctTot +
                 "%</td>";
             } else {
               var prevTot = null;
