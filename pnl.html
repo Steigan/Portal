@@ -2232,7 +2232,7 @@
         } else {
           // Костылёк: вырубаем все подразделения при первом "нормальном" запуске
           chartVisibilityState = Object.fromEntries(
-            currentDivisions.map((key) => [key, false]),
+            currentDivisions.map((key) => [key, true]),
           );
         }
         if (!state || rawData.length === 0) return;
@@ -2268,10 +2268,14 @@
           var vals = [];
           for (var m = 1; m <= 12; m++) {
             var sum = 0;
+            var numCount = 0;
             selDivisions.forEach(function (div) {
-              if (agg[div][y][m] !== undefined) sum += agg[div][y][m];
+              if (agg[div][y][m] !== undefined) {
+                sum += agg[div][y][m];
+                numCount++;
+              }
             });
-            agg["Всего"][y][m] = sum;
+            if (numCount) agg["Всего"][y][m] = sum;
           }
         });
 
