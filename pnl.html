@@ -2766,7 +2766,9 @@
       function saveChartVisibilityState(chart) {
         if (!chart || !chart.data || !Array.isArray(chart.data.datasets)) {
           // Костылёк: вырубаем все подразделения во втором графике
-          chartVisibilityState = new Set(currentDivisions);
+          chartVisibilityState = Object.fromEntries(
+            currentDivisions.map((key) => [key, false]),
+          );
           return;
         }
 
