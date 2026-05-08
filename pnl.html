@@ -2546,7 +2546,7 @@
             },
           });
         }
-        restoreChartVisibilityState(chartInstance);
+        restoreChartVisibilityState(divisionChartInstance);
       }
 
       // --- Line chart ---
@@ -2771,7 +2771,11 @@
         chart.data.datasets.forEach(function (ds, i) {
           if (!ds || !ds.label) return;
           var meta = chart.getDatasetMeta(i);
-          nextState[ds.label] = !!(meta && meta.hidden === true);
+          let label = String(ds.label);
+          if (label.includes("среднее")) {
+            label = label.slice(0, label.indexOf("среднее") + 7);
+          }
+          nextState[label] = !!(meta && meta.hidden === true);
         });
 
         chartVisibilityState = nextState;
@@ -2783,7 +2787,11 @@
 
         chart.data.datasets.forEach(function (ds, i) {
           if (!ds || !ds.label) return;
-          if (chartVisibilityState[ds.label] === true) {
+          let label = String(ds.label);
+          if (label.includes("среднее")) {
+            label = label.slice(0, label.indexOf("среднее") + 7);
+          }
+          if (chartVisibilityState[label] === true) {
             chart.setDatasetVisibility(i, false);
           }
         });
