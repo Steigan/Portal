@@ -2107,7 +2107,7 @@
         });
 
         h +=
-          '<tr class="total-row"><td class="division-name" style="font-weight:700;">Всего</td>';
+          '<tr class="total-row"><td class="division-name" style="font-weight:700;">Сумма по подразделениям</td>';
         years.forEach(function (y, yi) {
           for (var m = 1; m <= 12; m++) {
             var v = grandTotalMonth[y][m];
@@ -2232,7 +2232,9 @@
         } else {
           // Костылёк: вырубаем все подразделения при первом "нормальном" запуске
           chartVisibilityState = Object.fromEntries(
-            currentDivisions.map((key) => [key, true]),
+            currentDivisions
+              .map((key) => [key, true])
+              .concat(currentDivisions.map((key) => [key + "(среднее", true])),
           );
         }
         if (!state || rawData.length === 0) return;
@@ -2241,7 +2243,7 @@
         var selYears = getSelectedDivYears();
         var years = selYears.length > 0 ? selYears : currentYears.slice();
         var selDivisions = getSelectedPanel2Divisions();
-        selDivisions.push("Всего");
+        selDivisions.push("Сумма по подразделениям");
 
         var labels = [];
         years.forEach(function (y) {
@@ -2275,7 +2277,7 @@
                 numCount++;
               }
             });
-            if (numCount) agg["Всего"][y][m] = sum;
+            if (numCount) agg["Сумма по подразделениям"][y][m] = sum;
           }
         });
 
