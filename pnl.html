@@ -1107,7 +1107,7 @@
           buildDivYearCheckList();
           buildPanel2DivCheckList();
           renderTable();
-          renderChart();
+          //renderChart();
           renderDivisionTable();
           //renderDivisionChart();
           disclaimerDiv.style.display = "none";
@@ -2239,6 +2239,11 @@
           saveChartVisibilityState(divisionChartInstance);
           divisionChartInstance.destroy();
           divisionChartInstance = null;
+        } else {
+          // Костылёк: вырубаем все подразделения при первом запуске
+          chartVisibilityState = Object.fromEntries(
+            currentDivisions.map((key) => [key, false]),
+          );
         }
         if (!state || rawData.length === 0) return;
         state = state.replace(/^[\u00A0]+/, "");
@@ -2246,7 +2251,7 @@
         var selYears = getSelectedDivYears();
         var years = selYears.length > 0 ? selYears : currentYears.slice();
         var selDivisions = getSelectedPanel2Divisions();
-        selDivisions.add("Всего");
+        selDivisions.push("Всего");
 
         var labels = [];
         years.forEach(function (y) {
@@ -2765,14 +2770,8 @@
       }
 
       function saveChartVisibilityState(chart) {
-        if (!chart || !chart.data || !Array.isArray(chart.data.datasets)) {
-          // Костылёк: вырубаем все подразделения во втором графике
-          console.log("Got It!!!");
-          chartVisibilityState = Object.fromEntries(
-            currentDivisions.map((key) => [key, false]),
-          );
+        if (!chart || !chart.data || !Array.isArray(chart.data.datasets))
           return;
-        }
 
         var nextState = {};
         chart.data.datasets.forEach(function (ds, i) {
