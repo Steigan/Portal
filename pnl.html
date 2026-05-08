@@ -2246,6 +2246,7 @@
         var selYears = getSelectedDivYears();
         var years = selYears.length > 0 ? selYears : currentYears.slice();
         var selDivisions = getSelectedPanel2Divisions();
+        selDivisions.add("Всего");
 
         var labels = [];
         years.forEach(function (y) {
@@ -2766,6 +2767,7 @@
       function saveChartVisibilityState(chart) {
         if (!chart || !chart.data || !Array.isArray(chart.data.datasets)) {
           // Костылёк: вырубаем все подразделения во втором графике
+          console.log("Got It!!!");
           chartVisibilityState = Object.fromEntries(
             currentDivisions.map((key) => [key, false]),
           );
