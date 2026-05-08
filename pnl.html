@@ -995,6 +995,7 @@
       var currentYears = [];
       var chartInstance = null;
       var divisionChartInstance = null;
+      var chartVisibilityState = {};
       var currentTab = "main";
       var divMonthsCollapsed = false;
 
@@ -2235,6 +2236,7 @@
         var canvas = document.getElementById("divisionChart");
         var ctx = canvas.getContext("2d");
         if (divisionChartInstance) {
+          saveChartVisibilityState(divisionChartInstance);
           divisionChartInstance.destroy();
           divisionChartInstance = null;
         }
@@ -2544,6 +2546,7 @@
             },
           });
         }
+        restoreChartVisibilityState(chartInstance);
       }
 
       // --- Line chart ---
@@ -2552,6 +2555,7 @@
         var canvas = document.getElementById("lineChart");
         var ctx = canvas.getContext("2d");
         if (chartInstance) {
+          saveChartVisibilityState(chartInstance);
           chartInstance.destroy();
           chartInstance = null;
         }
@@ -2756,6 +2760,35 @@
             },
           },
         });
+        restoreChartVisibilityState(chartInstance);
+      }
+
+      function saveChartVisibilityState(chart) {
+        if (!chart || !chart.data || !Array.isArray(chart.data.datasets))
+          return;
+
+        var nextState = {};
+        chart.data.datasets.forEach(function (ds, i) {
+          if (!ds || !ds.label) return;
+          var meta = chart.getDatasetMeta(i);
+          nextState[ds.label] = !!(meta && meta.hidden === true);
+        });
+
+        chartVisibilityState = nextState;
+      }
+
+      function restoreChartVisibilityState(chart) {
+        if (!chart || !chart.data || !Array.isArray(chart.data.datasets))
+          return;
+
+        chart.data.datasets.forEach(function (ds, i) {
+          if (!ds || !ds.label) return;
+          if (chartVisibilityState[ds.label] === true) {
+            chart.setDatasetVisibility(i, false);
+          }
+        });
+
+        chart.update();
       }
     </script>
   </body>
