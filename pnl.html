@@ -999,7 +999,7 @@
       var currentTab = "main";
       var divMonthsCollapsed = false;
 
-      async function load_data() {
+      async function loadData() {
         document.title = data.label;
         document.getElementById("dashboardTitle").innerText = data.label;
         disclaimerDiv.innerText = "⏳ Загрузка данных из таблицы...";
@@ -1109,7 +1109,7 @@
           renderTable();
           renderChart();
           renderDivisionTable();
-          renderDivisionChart();
+          //renderDivisionChart();
           disclaimerDiv.style.display = "none";
           document.getElementById("mainContainer").style.display = "block";
         } catch (err) {
@@ -1131,7 +1131,7 @@
           currentIdToken = event.data.token;
           email = event.data.email;
           data = event.data.data;
-          load_data();
+          loadData();
         }
       });
       // ─── Утилиты ─────────────────────────────────────────────────────────────
