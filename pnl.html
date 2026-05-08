@@ -2234,7 +2234,7 @@
           chartVisibilityState = Object.fromEntries(
             currentDivisions
               .map((key) => [key, true])
-              .concat(currentDivisions.map((key) => [key + "(среднее", true])),
+              .concat(currentDivisions.map((key) => [key + " (среднее", true])),
           );
         }
         if (!state || rawData.length === 0) return;
@@ -2267,7 +2267,6 @@
         });
 
         years.forEach(function (y) {
-          var vals = [];
           for (var m = 1; m <= 12; m++) {
             var sum = 0;
             var numCount = 0;
@@ -2294,6 +2293,20 @@
           if (r.item !== "Доходы") return;
           if (!divRevenue[r.division] || !divRevenue[r.division][r.tag]) return;
           divRevenue[r.division][r.tag][r.period] = r.value;
+        });
+
+        years.forEach(function (y) {
+          for (var m = 1; m <= 12; m++) {
+            var sum = 0;
+            var numCount = 0;
+            selDivisions.forEach(function (div) {
+              if (divRevenue[div][y][m] !== undefined) {
+                sum += divRevenue[div][y][m];
+                numCount++;
+              }
+            });
+            if (numCount) divRevenue["Сумма по подразделениям"][y][m] = sum;
+          }
         });
 
         var yearlyAverages = {};
