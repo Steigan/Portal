@@ -1156,13 +1156,13 @@
           this.classList.add("active");
           document.getElementById("tab-" + tab).classList.add("active");
           currentTab = tab;
-          if (tab === "divisions") {
+          /*if (tab === "divisions") {
             renderDivisionTable();
             renderDivisionChart();
           } else {
             renderTable();
             renderChart();
-          }
+          }*/
         });
       });
 
@@ -1182,24 +1182,12 @@
           }
         });
 
-      // --- populate chart item select ---
+      // --- chart item select ---
       var chartSel = document.getElementById("chartItem");
-      /*selectStates.forEach(function (item) {
-        var o = document.createElement("option");
-        o.value = item;
-        o.textContent = item;
-        chartSel.appendChild(o);
-      });*/
       chartSel.addEventListener("change", renderChart);
 
-      // --- populate division state filter ---
+      // --- division state filter ---
       var divStateSel = document.getElementById("divStateFilter");
-      /*selectStates.forEach(function (item) {
-        var o = document.createElement("option");
-        o.value = item;
-        o.textContent = item;
-        divStateSel.appendChild(o);
-      });*/
       divStateSel.addEventListener("change", function () {
         renderDivisionTable();
         renderDivisionChart();
