@@ -1109,7 +1109,6 @@
           renderTable();
           renderChart();
           renderDivisionTable();
-          chartVisibilityState = new Set(currentDivisions);
           renderDivisionChart();
           disclaimerDiv.style.display = "none";
           document.getElementById("mainContainer").style.display = "block";
@@ -2765,8 +2764,11 @@
       }
 
       function saveChartVisibilityState(chart) {
-        if (!chart || !chart.data || !Array.isArray(chart.data.datasets))
+        if (!chart || !chart.data || !Array.isArray(chart.data.datasets)) {
+          // Костылёк: вырубаем все подразделения во втором графике
+          chartVisibilityState = new Set(currentDivisions);
           return;
+        }
 
         var nextState = {};
         chart.data.datasets.forEach(function (ds, i) {
