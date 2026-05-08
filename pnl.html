@@ -2228,7 +2228,7 @@
           divisionChartInstance.destroy();
           divisionChartInstance = null;
         } else {
-          // Костылёк: вырубаем все подразделения при первом запуске
+          // Костылёк: вырубаем все подразделения при первом "нормальном" запуске
           chartVisibilityState = Object.fromEntries(
             currentDivisions.map((key) => [key, false]),
           );
@@ -2260,6 +2260,17 @@
           if (!agg[r.division] || !agg[r.division][r.tag]) return;
           agg[r.division][r.tag][r.period] =
             (agg[r.division][r.tag][r.period] || 0) + r.value;
+        });
+
+        years.forEach(function (y) {
+          var vals = [];
+          for (var m = 1; m <= 12; m++) {
+            var sum = 0;
+            selDivisions.forEach(function (d) {
+              if (agg[div][y][m] !== undefined) sum += agg[d][y][m];
+            });
+            agg["Всего"][y][m] = sum;
+          }
         });
 
         var ratioMode = document.getElementById("divRatioToggle").checked;
@@ -2778,6 +2789,8 @@
       function restoreChartVisibilityState(chart) {
         if (!chart || !chart.data || !Array.isArray(chart.data.datasets))
           return;
+
+        chart.update();
 
         chart.data.datasets.forEach(function (ds, i) {
           if (!ds || !ds.label) return;
