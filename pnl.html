@@ -1304,9 +1304,9 @@
         if (isNaN(pct) || !isFinite(pct))
           return '<br><span class="dev-none">x</span>';
         if (pct_float === 0) return '<br><span class="dev-none">-</span>';
-        var cls = pct > 0 ? "dev-pos" : "dev-neg";
-        var arrow = pct > 0 ? "↑" : "↓";
-        var sign = pct > 0 ? "+" : "−";
+        var cls = pct === 0 ? "dev-none" : pct > 0 ? "dev-pos" : "dev-neg";
+        var arrow = pct === 0 ? "" : pct > 0 ? "↑" : "↓";
+        var sign = pct === 0 ? "" : pct > 0 ? "+" : "−";
         return (
           '<br><span class="' +
           cls +
