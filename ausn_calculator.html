@@ -1249,7 +1249,8 @@
             : "";
       }
 
-      function parseOriginalWorkbookRows(sheetRows) {
+      function parseSBERWorkbookRows(sheetRows) {
+        //Формат Сбербанка
         const output = [];
         let currentDate = "";
         let currentCounterparty = "";
@@ -1282,7 +1283,8 @@
         return output;
       }
 
-      function parseAlternateWorkbookRows(sheetRows) {
+      function parseIFNSWorkbookRows(sheetRows) {
+        //Формат ЛК АУСН ФНС
         const output = [];
 
         for (const row of sheetRows) {
@@ -1292,8 +1294,8 @@
           const purpose = normalizeMultiline(row[1]);
           const counterparty = normalizeMultiline(row[2]);
           const totalAmount = Number(row[3] || 0);
-          const income = Number(row[5] || 0) - Number(row[6] || 0);
-          const expense = Number(row[7] || 0) - Number(row[8] || 0);
+          const income = Number(row[6] || 0) - Number(row[7] || 0);
+          const expense = Number(row[8] || 0) - Number(row[9] || 0);
           const nonTaxBase = totalAmount - income - expense;
 
           const variants = [
@@ -1321,13 +1323,21 @@
         const headerRow = (sheetRows[0] || []).map((value) =>
           normalizeMultiline(value).toLowerCase(),
         );
-        const isAlternateStructure =
+        const isIFNSStructure =
           headerRow[0] === "дата" &&
           headerRow[1] === "операция" &&
-          headerRow[2] === "источник";
-        return isAlternateStructure
-          ? parseAlternateWorkbookRows(sheetRows.slice(1))
-          : parseOriginalWorkbookRows(sheetRows);
+          headerRow[2] === "источник" &&
+          headerRow[3] === "сумма, ₽" &&
+          headerRow[4] === "разметка операции, ₽" &&
+          headerRow[5] === "налоговая база" &&
+          headerRow[6] === "приход, ₽" &&
+          headerRow[7] === "возврат прихода, ₽" &&
+          headerRow[8] === "расход, ₽" &&
+          headerRow[9] === "возврат расхода, ₽";
+
+        return isIFNSStructure
+          ? parseIFNSWorkbookRows(sheetRows.slice(1))
+          : parseSBERWorkbookRows(sheetRows);
       }
 
       periodFilter.addEventListener("change", applyFilters);
