@@ -699,6 +699,7 @@
               <input type="checkbox" id="ratioToggle" />
               <span>Показывать отношение к выручке</span>
             </label>
+            <button id="scrollToChart" class="toggle-months-btn" type="button">К графику</button>
           </div>
 
           <div class="table-wrap-container">
@@ -730,6 +731,7 @@
               >
                 <option value="">— выберите статью —</option>
               </select>
+              <button id="scrollToControls" class="toggle-months-btn" type="button">Наверх</button>
             </div>
             <div class="chart-box">
               <div class="chart-box-inner">
@@ -934,6 +936,7 @@
               <input type="checkbox" id="divRatioToggle" />
               <span>Показывать отношение к выручке</span>
             </label>
+            <button id="scrollToDivChart" class="toggle-months-btn" type="button">К графику</button>
           </div>
 
           <div class="table-wrap-container">
@@ -948,6 +951,7 @@
             <div class="divisions-chart-controls">
               <button id="enableAllDivisionSeries" class="toggle-months-btn" type="button">Включить все ряды графика</button>
               <button id="disableAllDivisionSeries" class="toggle-months-btn" type="button">Отключить все ряды графика</button>
+              <button id="scrollToDivControls" class="toggle-months-btn" type="button">Наверх</button>
             </div>
             <div class="divisions-chart-box">
               <div class="divisions-chart-box-inner">
@@ -2877,6 +2881,19 @@
 
         chart.update();
       }
+
+      document.getElementById('scrollToChart').addEventListener('click', function () {
+        document.querySelector('.chart-section').scrollIntoView({ behavior: 'smooth', block: 'start' });
+      });
+      document.getElementById('scrollToControls').addEventListener('click', function () {
+        document.querySelector('.controls').scrollIntoView({ behavior: 'smooth', block: 'start' });
+      });
+      document.getElementById('scrollToDivChart').addEventListener('click', function () {
+        document.querySelector('.divisions-chart-section').scrollIntoView({ behavior: 'smooth', block: 'start' });
+      });
+      document.getElementById('scrollToDivControls').addEventListener('click', function () {
+        document.querySelector('.division-controls').scrollIntoView({ behavior: 'smooth', block: 'start' });
+      });
     </script>
   </body>
 </html>
