@@ -468,6 +468,11 @@
       .divisions-chart-section {
         padding: 20px 30px;
       }
+      .divisions-chart-controls {
+        display: flex;
+        gap: 10px;
+        margin-bottom: 12px;
+      }
       .divisions-chart-box {
         background: #fff;
         border-radius: 10px;
@@ -940,6 +945,10 @@
           </div>
 
           <div class="divisions-chart-section">
+            <div class="divisions-chart-controls">
+              <button id="enableAllDivisionSeries" class="toggle-months-btn" type="button">Включить все ряды графика</button>
+              <button id="disableAllDivisionSeries" class="toggle-months-btn" type="button">Отключить все ряды графика</button>
+            </div>
             <div class="divisions-chart-box">
               <div class="divisions-chart-box-inner">
                 <canvas id="divisionChart"></canvas>
@@ -1874,6 +1883,13 @@
           renderDivisionChart();
         });
 
+      document
+        .getElementById("enableAllDivisionSeries")
+        .addEventListener("click", enableAllDivisionChartSeries);
+      document
+        .getElementById("disableAllDivisionSeries")
+        .addEventListener("click", disableAllDivisionChartSeries);
+
       // --- Division Table ---
       function renderDivisionTable() {
         var wrap = document.getElementById("divTableWrap");
@@ -2792,6 +2808,36 @@
           },
         });
         restoreChartVisibilityState(chartInstance);
+      }
+
+      function enableAllDivisionChartSeries() {
+        if (!divisionChartInstance) return;
+        var chart = divisionChartInstance;
+        chart.data.datasets.forEach(function (ds, i) {
+          chart.setDatasetVisibility(i, true);
+        });
+        chartVisibilityState = {};
+        chart.update();
+      }
+
+      function disableAllDivisionChartSeries() {
+        if (!divisionChartInstance) return;
+        var chart = divisionChartInstance;
+        chart.data.datasets.forEach(function (ds, i) {
+          chart.setDatasetVisibility(i, false);
+        });
+        var nextState = {};
+        chart.data.datasets.forEach(function (ds, i) {
+          if (!ds || !ds.label) return;
+          var meta = chart.getDatasetMeta(i);
+          let label = String(ds.label);
+          if (label.includes("среднее")) {
+            label = label.slice(0, label.indexOf("среднее") + 7);
+          }
+          nextState[label] = true;
+        });
+        chartVisibilityState = nextState;
+        chart.update();
       }
 
       function saveChartVisibilityState(chart) {
