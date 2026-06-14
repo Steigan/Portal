@@ -267,6 +267,7 @@
       }
       td.num {
         text-align: right;
+        cursor: pointer;
       }
       td.pos {
         color: #1a7a3c;
@@ -498,6 +499,63 @@
         height: 16px;
         cursor: pointer;
         accent-color: #2563a8;
+      }
+      .cell-popup {
+        position: absolute;
+        z-index: 1000;
+        background: #fff;
+        border: 1px solid #c5cdd8;
+        border-radius: 10px;
+        box-shadow: 0 6px 24px rgba(0,0,0,0.15);
+        padding: 14px 18px;
+        min-width: 280px;
+        max-width: 400px;
+        font-size: 0.85rem;
+        line-height: 1.6;
+        pointer-events: auto;
+      }
+      .cell-popup .popup-item {
+        font-weight: 700;
+        color: #1a3a5c;
+        font-size: 0.9rem;
+        margin-bottom: 4px;
+      }
+      .cell-popup .popup-period {
+        color: #555;
+        font-size: 0.8rem;
+        margin-bottom: 8px;
+      }
+      .cell-popup .popup-divider {
+        border: none;
+        border-top: 1px solid #eef0f3;
+        margin: 8px 0;
+      }
+      .cell-popup .popup-row {
+        display: flex;
+        justify-content: space-between;
+        gap: 12px;
+      }
+      .cell-popup .popup-label {
+        color: #666;
+      }
+      .cell-popup .popup-val {
+        text-align: right;
+        font-weight: 600;
+      }
+      .cell-popup .popup-diff-pos {
+        color: #1a7a3c;
+      }
+      .cell-popup .popup-diff-neg {
+        color: #c0392b;
+      }
+      .cell-popup .popup-diff-zero {
+        color: #999;
+      }
+      .cell-popup .popup-abs {
+        font-weight: 600;
+      }
+      .cell-popup .popup-pct {
+        margin-left: 6px;
       }
       @media (max-width: 768px) {
         .header h1 {
@@ -1013,6 +1071,8 @@
       var chartVisibilityState = {};
       var currentTab = "main";
       var divMonthsCollapsed = false;
+      var tableDataCache = null;
+      var divTableDataCache = null;
 
       async function loadData() {
         document.title = data.label;
@@ -1541,6 +1601,12 @@
         });
         h += "</tbody></table>";
         wrap.innerHTML = h;
+        tableDataCache = {
+          lookup: lookup,
+          yearTotals: yearTotals,
+          years: years,
+          tableStates: tableStates,
+        };
         applyMonthsVisibility();
       }
 
@@ -2226,6 +2292,12 @@
         h += "</tr>";
         h += "</tbody></table>";
         wrap.innerHTML = h;
+        divTableDataCache = {
+          lookup: lookup,
+          yearTotals: yearTotals,
+          years: years,
+          selDivisions: selDivisions,
+        };
         applyDivMonthsVisibility();
       }
 
@@ -2893,6 +2965,212 @@
       });
       document.getElementById('scrollToDivControls').addEventListener('click', function () {
         document.querySelector('.division-controls').scrollIntoView({ behavior: 'smooth', block: 'start' });
+      });
+
+      // ─── Cell popup ───────────────────────────────────────────────────────────
+      function formatNum(v) {
+        if (v === null || v === undefined || isNaN(v)) return null;
+        return Math.round(v).toLocaleString("ru-RU");
+      }
+
+      function fmtDiff(absVal, pctVal) {
+        if (absVal === null || absVal === undefined || isNaN(absVal)) return "";
+        var abs = Math.abs(Math.round(absVal)).toLocaleString("ru-RU");
+        var cls = absVal > 0 ? "popup-diff-pos" : absVal < 0 ? "popup-diff-neg" : "popup-diff-zero";
+        var sign = absVal > 0 ? "+" : absVal < 0 ? "−" : "";
+        var arrow = absVal > 0 ? "↑" : absVal < 0 ? "↓" : "";
+        var pct = "";
+        if (pctVal !== null && pctVal !== undefined && isFinite(pctVal)) {
+          var pctCls = pctVal > 0 ? "popup-diff-pos" : pctVal < 0 ? "popup-diff-neg" : "popup-diff-zero";
+          var pctSign = pctVal > 0 ? "+" : "";
+          pct = ' <span class="popup-pct ' + pctCls + '">(' + pctSign + pctVal.toFixed(1) + '%)</span>';
+        }
+        return ' <span class="popup-abs ' + cls + '">' + arrow + " " + sign + abs + "</span>" + pct;
+      }
+
+      function removePopup() {
+        var existing = document.querySelector(".cell-popup");
+        if (existing) existing.remove();
+      }
+
+      function showCellPopup(cell, cache, isDivision) {
+        removePopup();
+
+        var row = cell.closest("tr");
+        var itemEl;
+        if (isDivision) {
+          itemEl = row.querySelector("td.division-name");
+        } else {
+          itemEl = row.querySelector("td.item-name");
+        }
+        if (!itemEl) return;
+        var item = itemEl.getAttribute("data-item") || itemEl.textContent.trim();
+        item = item.replace(/^[\u00A0]+/, "");
+
+        var year = parseInt(cell.getAttribute("data-year"), 10);
+        var month = parseInt(cell.getAttribute("data-month"), 10);
+        var isTotal = cell.classList.contains("year-total-col");
+
+        var currentVal, prevMonthVal, prevYearVal;
+        var prevMonthLabel = "", prevYearLabel = "";
+
+        if (isTotal) {
+          // --- Year total ---
+          currentVal = cache.yearTotals[item] && cache.yearTotals[item][year];
+          if (currentVal === undefined || currentVal === null) return;
+          currentVal = Math.round(currentVal);
+
+          var yearIdx = cache.years.indexOf(year);
+          var prevYearTotal = null;
+          if (yearIdx > 0) {
+            var prevY = cache.years[yearIdx - 1];
+            var tmp = cache.yearTotals[item] && cache.yearTotals[item][prevY];
+            if (tmp !== undefined && tmp !== null) {
+              prevYearTotal = Math.round(tmp);
+              prevYearLabel = String(prevY);
+            }
+          }
+
+          var html = "";
+          html += '<div class="popup-item">' + item + "</div>";
+          html += '<div class="popup-period">Итого за <b>' + year + "</b></div>";
+          html += '<hr class="popup-divider">';
+          html += '<div class="popup-row"><span class="popup-label">Значение:</span><span class="popup-val">' + (currentVal !== 0 ? (currentVal < 0 ? "−" : "") + Math.abs(currentVal).toLocaleString("ru-RU") : "—") + "</span></div>";
+
+          if (prevYearTotal !== null) {
+            var diff = currentVal - prevYearTotal;
+            var pct = prevYearTotal !== 0 ? (diff / Math.abs(prevYearTotal)) * 100 : null;
+            html += '<hr class="popup-divider">';
+            html += '<div style="color:#888;font-size:0.8rem;">По сравнению с предыдущим годом:</div>';
+            html += '<div class="popup-row"><span class="popup-label">' + prevYearLabel + ':</span><span class="popup-val">' + (prevYearTotal < 0 ? "−" : "") + Math.abs(prevYearTotal).toLocaleString("ru-RU") + "</span></div>";
+            html += '<div class="popup-row"><span class="popup-label">Отклонение:</span><span class="popup-val">' + fmtDiff(diff, pct) + "</span></div>";
+          } else {
+            html += '<hr class="popup-divider">';
+            html += '<div style="color:#999;font-size:0.8rem;">Нет данных за предыдущий год</div>';
+          }
+
+          showPopupAtCell(cell, html);
+        } else {
+          // --- Month column ---
+          currentVal = cache.lookup[item] && cache.lookup[item][year] && cache.lookup[item][year][month];
+          if (currentVal === undefined || currentVal === null) return;
+          currentVal = Math.round(currentVal);
+
+          // Previous month
+          var yearIdx = cache.years.indexOf(year);
+          if (month > 1) {
+            var tmp = cache.lookup[item] && cache.lookup[item][year] && cache.lookup[item][year][month - 1];
+            if (tmp !== undefined && tmp !== null) {
+              prevMonthVal = Math.round(tmp);
+              prevMonthLabel = MONTH_NAMES[month - 2] + " " + year;
+            }
+          } else if (yearIdx > 0) {
+            var prevY = cache.years[yearIdx - 1];
+            var tmp = cache.lookup[item] && cache.lookup[item][prevY] && cache.lookup[item][prevY][12];
+            if (tmp !== undefined && tmp !== null) {
+              prevMonthVal = Math.round(tmp);
+              prevMonthLabel = MONTH_NAMES[11] + " " + prevY;
+            }
+          }
+
+          // Previous year same month
+          if (yearIdx > 0) {
+            var prevY = cache.years[yearIdx - 1];
+            var tmp = cache.lookup[item] && cache.lookup[item][prevY] && cache.lookup[item][prevY][month];
+            if (tmp !== undefined && tmp !== null) {
+              prevYearVal = Math.round(tmp);
+              prevYearLabel = MONTH_NAMES[month - 1] + " " + prevY;
+            }
+          }
+
+          var html = "";
+          html += '<div class="popup-item">' + item + "</div>";
+          html += '<div class="popup-period"><b>' + MONTH_NAMES[month - 1] + " " + year + "</b></div>";
+          html += '<hr class="popup-divider">';
+          html += '<div class="popup-row"><span class="popup-label">Значение:</span><span class="popup-val">' + (currentVal !== 0 ? (currentVal < 0 ? "−" : "") + Math.abs(currentVal).toLocaleString("ru-RU") : "—") + "</span></div>";
+
+          if (prevMonthVal !== undefined) {
+            var diff = currentVal - prevMonthVal;
+            var pct = prevMonthVal !== 0 ? (diff / Math.abs(prevMonthVal)) * 100 : null;
+            html += '<hr class="popup-divider">';
+            html += '<div style="color:#888;font-size:0.8rem;">По сравнению с предыдущим месяцем:</div>';
+            html += '<div class="popup-row"><span class="popup-label">' + prevMonthLabel + ':</span><span class="popup-val">' + (prevMonthVal < 0 ? "−" : "") + Math.abs(prevMonthVal).toLocaleString("ru-RU") + "</span></div>";
+            html += '<div class="popup-row"><span class="popup-label">Отклонение:</span><span class="popup-val">' + fmtDiff(diff, pct) + "</span></div>";
+          } else {
+            html += '<hr class="popup-divider">';
+            html += '<div style="color:#999;font-size:0.8rem;">Нет данных за предыдущий месяц</div>';
+          }
+
+          if (prevYearVal !== undefined) {
+            var diff = currentVal - prevYearVal;
+            var pct = prevYearVal !== 0 ? (diff / Math.abs(prevYearVal)) * 100 : null;
+            html += '<hr class="popup-divider">';
+            html += '<div style="color:#888;font-size:0.8rem;">По сравнению с предыдущим годом:</div>';
+            html += '<div class="popup-row"><span class="popup-label">' + prevYearLabel + ':</span><span class="popup-val">' + (prevYearVal < 0 ? "−" : "") + Math.abs(prevYearVal).toLocaleString("ru-RU") + "</span></div>";
+            html += '<div class="popup-row"><span class="popup-label">Отклонение:</span><span class="popup-val">' + fmtDiff(diff, pct) + "</span></div>";
+          } else {
+            html += '<hr class="popup-divider">';
+            html += '<div style="color:#999;font-size:0.8rem;">Нет данных за предыдущий год</div>';
+          }
+
+          showPopupAtCell(cell, html);
+        }
+      }
+
+      function showPopupAtCell(cell, html) {
+        var wrap = cell.closest(".table-wrap");
+        if (!wrap) return;
+        var popup = document.createElement("div");
+        popup.className = "cell-popup";
+        popup.innerHTML = html;
+        wrap.appendChild(popup);
+
+        var rect = cell.getBoundingClientRect();
+        var wrapRect = wrap.getBoundingClientRect();
+        var popupW = popup.offsetWidth;
+        var popupH = popup.offsetHeight;
+
+        var left = rect.right - wrapRect.left + 8;
+        var top = rect.top - wrapRect.top;
+
+        if (left + popupW > wrapRect.width - 10) {
+          left = rect.left - wrapRect.left - popupW - 8;
+        }
+        if (left < 4) left = 4;
+
+        if (top + popupH > wrapRect.height - 10) {
+          top = wrapRect.height - popupH - 10;
+        }
+        if (top < 4) top = 4;
+
+        popup.style.left = left + "px";
+        popup.style.top = top + "px";
+      }
+
+      // ─── Click handlers for popup ─────────────────────────────────────────────
+      document.getElementById("tableWrap").addEventListener("click", function (e) {
+        var cell = e.target.closest("td.num");
+        if (!cell) return;
+        if (cell.classList.contains("item-name")) return;
+        if (!tableDataCache) return;
+        showCellPopup(cell, tableDataCache, false);
+      });
+
+      document.getElementById("divTableWrap").addEventListener("click", function (e) {
+        var cell = e.target.closest("td.num");
+        if (!cell) return;
+        if (cell.classList.contains("division-name")) return;
+        if (!divTableDataCache) return;
+        showCellPopup(cell, divTableDataCache, true);
+      });
+
+      // ─── Close popup on outside click ─────────────────────────────────────────
+      document.addEventListener("click", function (e) {
+        var popup = document.querySelector(".cell-popup");
+        if (!popup) return;
+        if (!popup.contains(e.target) && !e.target.closest("td.num")) {
+          removePopup();
+        }
       });
     </script>
   </body>
