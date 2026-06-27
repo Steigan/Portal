@@ -506,7 +506,7 @@
         background: #fff;
         border: 1px solid #c5cdd8;
         border-radius: 10px;
-        box-shadow: 0 6px 24px rgba(0,0,0,0.15);
+        box-shadow: 0 6px 24px rgba(0, 0, 0, 0.15);
         padding: 14px 18px;
         min-width: 280px;
         max-width: 400px;
@@ -757,7 +757,9 @@
               <input type="checkbox" id="ratioToggle" />
               <span>Показывать отношение к выручке</span>
             </label>
-            <button id="scrollToChart" class="toggle-months-btn" type="button">К графику</button>
+            <button id="scrollToChart" class="toggle-months-btn" type="button">
+              К графику
+            </button>
           </div>
 
           <div class="table-wrap-container">
@@ -789,7 +791,13 @@
               >
                 <option value="">— выберите статью —</option>
               </select>
-              <button id="scrollToControls" class="toggle-months-btn" type="button">Наверх</button>
+              <button
+                id="scrollToControls"
+                class="toggle-months-btn"
+                type="button"
+              >
+                Наверх
+              </button>
             </div>
             <div class="chart-box">
               <div class="chart-box-inner">
@@ -994,7 +1002,13 @@
               <input type="checkbox" id="divRatioToggle" />
               <span>Показывать отношение к выручке</span>
             </label>
-            <button id="scrollToDivChart" class="toggle-months-btn" type="button">К графику</button>
+            <button
+              id="scrollToDivChart"
+              class="toggle-months-btn"
+              type="button"
+            >
+              К графику
+            </button>
           </div>
 
           <div class="table-wrap-container">
@@ -1007,9 +1021,27 @@
 
           <div class="divisions-chart-section">
             <div class="divisions-chart-controls">
-              <button id="enableAllDivisionSeries" class="toggle-months-btn" type="button">Включить все ряды графика</button>
-              <button id="disableAllDivisionSeries" class="toggle-months-btn" type="button">Отключить все ряды графика</button>
-              <button id="scrollToDivControls" class="toggle-months-btn" type="button">Наверх</button>
+              <button
+                id="enableAllDivisionSeries"
+                class="toggle-months-btn"
+                type="button"
+              >
+                Включить все ряды графика
+              </button>
+              <button
+                id="disableAllDivisionSeries"
+                class="toggle-months-btn"
+                type="button"
+              >
+                Отключить все ряды графика
+              </button>
+              <button
+                id="scrollToDivControls"
+                class="toggle-months-btn"
+                type="button"
+              >
+                Наверх
+              </button>
             </div>
             <div class="divisions-chart-box">
               <div class="divisions-chart-box-inner">
@@ -1080,7 +1112,7 @@
         disclaimerDiv.innerText = "⏳ Загрузка данных из таблицы...";
 
         const baseUrl =
-          "https://script.google.com/macros/s/AKfycby06OccwIMKMK88Tdl6b56qW2i6k8hlo2qYtqLSfzWdZH6VpSxp9zo8o5gIa7NZult0tw/exec";
+          "https://script.google.com/macros/s/AKfycbxj0_zS6rSzLqqTjKn2FkJNjZ9JPMXEhBil4iNpMesX4XZ8alUhEHokt9HFrp-u_KaF/exec";
 
         if (!currentIdToken) {
           showError("Необходимо войти через Google.");
@@ -2954,18 +2986,34 @@
         chart.update();
       }
 
-      document.getElementById('scrollToChart').addEventListener('click', function () {
-        document.querySelector('.chart-section').scrollIntoView({ behavior: 'smooth', block: 'start' });
-      });
-      document.getElementById('scrollToControls').addEventListener('click', function () {
-        document.querySelector('.controls').scrollIntoView({ behavior: 'smooth', block: 'start' });
-      });
-      document.getElementById('scrollToDivChart').addEventListener('click', function () {
-        document.querySelector('.divisions-chart-section').scrollIntoView({ behavior: 'smooth', block: 'start' });
-      });
-      document.getElementById('scrollToDivControls').addEventListener('click', function () {
-        document.querySelector('.division-controls').scrollIntoView({ behavior: 'smooth', block: 'start' });
-      });
+      document
+        .getElementById("scrollToChart")
+        .addEventListener("click", function () {
+          document
+            .querySelector(".chart-section")
+            .scrollIntoView({ behavior: "smooth", block: "start" });
+        });
+      document
+        .getElementById("scrollToControls")
+        .addEventListener("click", function () {
+          document
+            .querySelector(".controls")
+            .scrollIntoView({ behavior: "smooth", block: "start" });
+        });
+      document
+        .getElementById("scrollToDivChart")
+        .addEventListener("click", function () {
+          document
+            .querySelector(".divisions-chart-section")
+            .scrollIntoView({ behavior: "smooth", block: "start" });
+        });
+      document
+        .getElementById("scrollToDivControls")
+        .addEventListener("click", function () {
+          document
+            .querySelector(".division-controls")
+            .scrollIntoView({ behavior: "smooth", block: "start" });
+        });
 
       // ─── Cell popup ───────────────────────────────────────────────────────────
       function formatNum(v) {
@@ -2976,16 +3024,42 @@
       function fmtDiff(absVal, pctVal) {
         if (absVal === null || absVal === undefined || isNaN(absVal)) return "";
         var abs = Math.abs(Math.round(absVal)).toLocaleString("ru-RU");
-        var cls = absVal > 0 ? "popup-diff-pos" : absVal < 0 ? "popup-diff-neg" : "popup-diff-zero";
+        var cls =
+          absVal > 0
+            ? "popup-diff-pos"
+            : absVal < 0
+              ? "popup-diff-neg"
+              : "popup-diff-zero";
         var sign = absVal > 0 ? "+" : absVal < 0 ? "−" : "";
         var arrow = absVal > 0 ? "↑" : absVal < 0 ? "↓" : "";
         var pct = "";
         if (pctVal !== null && pctVal !== undefined && isFinite(pctVal)) {
-          var pctCls = pctVal > 0 ? "popup-diff-pos" : pctVal < 0 ? "popup-diff-neg" : "popup-diff-zero";
+          var pctCls =
+            pctVal > 0
+              ? "popup-diff-pos"
+              : pctVal < 0
+                ? "popup-diff-neg"
+                : "popup-diff-zero";
           var pctSign = pctVal > 0 ? "+" : "";
-          pct = ' <span class="popup-pct ' + pctCls + '">(' + pctSign + pctVal.toFixed(1) + '%)</span>';
+          pct =
+            ' <span class="popup-pct ' +
+            pctCls +
+            '">(' +
+            pctSign +
+            pctVal.toFixed(1) +
+            "%)</span>";
         }
-        return ' <span class="popup-abs ' + cls + '">' + arrow + " " + sign + abs + "</span>" + pct;
+        return (
+          ' <span class="popup-abs ' +
+          cls +
+          '">' +
+          arrow +
+          " " +
+          sign +
+          abs +
+          "</span>" +
+          pct
+        );
       }
 
       function removePopup() {
@@ -3004,7 +3078,8 @@
           itemEl = row.querySelector("td.item-name");
         }
         if (!itemEl) return;
-        var item = itemEl.getAttribute("data-item") || itemEl.textContent.trim();
+        var item =
+          itemEl.getAttribute("data-item") || itemEl.textContent.trim();
         item = item.replace(/^[\u00A0]+/, "");
 
         var year = parseInt(cell.getAttribute("data-year"), 10);
@@ -3012,7 +3087,8 @@
         var isTotal = cell.classList.contains("year-total-col");
 
         var currentVal, prevMonthVal, prevYearVal;
-        var prevMonthLabel = "", prevYearLabel = "";
+        var prevMonthLabel = "",
+          prevYearLabel = "";
 
         if (isTotal) {
           // --- Year total ---
@@ -3033,40 +3109,70 @@
 
           var html = "";
           html += '<div class="popup-item">' + item + "</div>";
-          html += '<div class="popup-period">Итого за <b>' + year + "</b></div>";
+          html +=
+            '<div class="popup-period">Итого за <b>' + year + "</b></div>";
           html += '<hr class="popup-divider">';
-          html += '<div class="popup-row"><span class="popup-label">Значение:</span><span class="popup-val">' + (currentVal !== 0 ? (currentVal < 0 ? "−" : "") + Math.abs(currentVal).toLocaleString("ru-RU") : "—") + "</span></div>";
+          html +=
+            '<div class="popup-row"><span class="popup-label">Значение:</span><span class="popup-val">' +
+            (currentVal !== 0
+              ? (currentVal < 0 ? "−" : "") +
+                Math.abs(currentVal).toLocaleString("ru-RU")
+              : "—") +
+            "</span></div>";
 
           if (prevYearTotal !== null) {
             var diff = currentVal - prevYearTotal;
-            var pct = prevYearTotal !== 0 ? (diff / Math.abs(prevYearTotal)) * 100 : null;
+            var pct =
+              prevYearTotal !== 0
+                ? (diff / Math.abs(prevYearTotal)) * 100
+                : null;
             html += '<hr class="popup-divider">';
-            html += '<div style="color:#888;font-size:0.8rem;">По сравнению с предыдущим годом:</div>';
-            html += '<div class="popup-row"><span class="popup-label">' + prevYearLabel + ':</span><span class="popup-val">' + (prevYearTotal < 0 ? "−" : "") + Math.abs(prevYearTotal).toLocaleString("ru-RU") + "</span></div>";
-            html += '<div class="popup-row"><span class="popup-label">Отклонение:</span><span class="popup-val">' + fmtDiff(diff, pct) + "</span></div>";
+            html +=
+              '<div style="color:#888;font-size:0.8rem;">По сравнению с предыдущим годом:</div>';
+            html +=
+              '<div class="popup-row"><span class="popup-label">' +
+              prevYearLabel +
+              ':</span><span class="popup-val">' +
+              (prevYearTotal < 0 ? "−" : "") +
+              Math.abs(prevYearTotal).toLocaleString("ru-RU") +
+              "</span></div>";
+            html +=
+              '<div class="popup-row"><span class="popup-label">Отклонение:</span><span class="popup-val">' +
+              fmtDiff(diff, pct) +
+              "</span></div>";
           } else {
             html += '<hr class="popup-divider">';
-            html += '<div style="color:#999;font-size:0.8rem;">Нет данных за предыдущий год</div>';
+            html +=
+              '<div style="color:#999;font-size:0.8rem;">Нет данных за предыдущий год</div>';
           }
 
           showPopupAtCell(cell, html);
         } else {
           // --- Month column ---
-          currentVal = cache.lookup[item] && cache.lookup[item][year] && cache.lookup[item][year][month];
+          currentVal =
+            cache.lookup[item] &&
+            cache.lookup[item][year] &&
+            cache.lookup[item][year][month];
           if (currentVal === undefined || currentVal === null) return;
           currentVal = Math.round(currentVal);
 
           // Previous month
           var yearIdx = cache.years.indexOf(year);
           if (month > 1) {
-            var tmp = cache.lookup[item] && cache.lookup[item][year] && cache.lookup[item][year][month - 1];
+            var tmp =
+              cache.lookup[item] &&
+              cache.lookup[item][year] &&
+              cache.lookup[item][year][month - 1];
             if (tmp !== undefined && tmp !== null) {
               prevMonthVal = Math.round(tmp);
               prevMonthLabel = MONTH_NAMES[month - 2] + " " + year;
             }
           } else if (yearIdx > 0) {
             var prevY = cache.years[yearIdx - 1];
-            var tmp = cache.lookup[item] && cache.lookup[item][prevY] && cache.lookup[item][prevY][12];
+            var tmp =
+              cache.lookup[item] &&
+              cache.lookup[item][prevY] &&
+              cache.lookup[item][prevY][12];
             if (tmp !== undefined && tmp !== null) {
               prevMonthVal = Math.round(tmp);
               prevMonthLabel = MONTH_NAMES[11] + " " + prevY;
@@ -3076,7 +3182,10 @@
           // Previous year same month
           if (yearIdx > 0) {
             var prevY = cache.years[yearIdx - 1];
-            var tmp = cache.lookup[item] && cache.lookup[item][prevY] && cache.lookup[item][prevY][month];
+            var tmp =
+              cache.lookup[item] &&
+              cache.lookup[item][prevY] &&
+              cache.lookup[item][prevY][month];
             if (tmp !== undefined && tmp !== null) {
               prevYearVal = Math.round(tmp);
               prevYearLabel = MONTH_NAMES[month - 1] + " " + prevY;
@@ -3085,32 +3194,67 @@
 
           var html = "";
           html += '<div class="popup-item">' + item + "</div>";
-          html += '<div class="popup-period"><b>' + MONTH_NAMES[month - 1] + " " + year + "</b></div>";
+          html +=
+            '<div class="popup-period"><b>' +
+            MONTH_NAMES[month - 1] +
+            " " +
+            year +
+            "</b></div>";
           html += '<hr class="popup-divider">';
-          html += '<div class="popup-row"><span class="popup-label">Значение:</span><span class="popup-val">' + (currentVal !== 0 ? (currentVal < 0 ? "−" : "") + Math.abs(currentVal).toLocaleString("ru-RU") : "—") + "</span></div>";
+          html +=
+            '<div class="popup-row"><span class="popup-label">Значение:</span><span class="popup-val">' +
+            (currentVal !== 0
+              ? (currentVal < 0 ? "−" : "") +
+                Math.abs(currentVal).toLocaleString("ru-RU")
+              : "—") +
+            "</span></div>";
 
           if (prevMonthVal !== undefined) {
             var diff = currentVal - prevMonthVal;
-            var pct = prevMonthVal !== 0 ? (diff / Math.abs(prevMonthVal)) * 100 : null;
+            var pct =
+              prevMonthVal !== 0 ? (diff / Math.abs(prevMonthVal)) * 100 : null;
             html += '<hr class="popup-divider">';
-            html += '<div style="color:#888;font-size:0.8rem;">По сравнению с предыдущим месяцем:</div>';
-            html += '<div class="popup-row"><span class="popup-label">' + prevMonthLabel + ':</span><span class="popup-val">' + (prevMonthVal < 0 ? "−" : "") + Math.abs(prevMonthVal).toLocaleString("ru-RU") + "</span></div>";
-            html += '<div class="popup-row"><span class="popup-label">Отклонение:</span><span class="popup-val">' + fmtDiff(diff, pct) + "</span></div>";
+            html +=
+              '<div style="color:#888;font-size:0.8rem;">По сравнению с предыдущим месяцем:</div>';
+            html +=
+              '<div class="popup-row"><span class="popup-label">' +
+              prevMonthLabel +
+              ':</span><span class="popup-val">' +
+              (prevMonthVal < 0 ? "−" : "") +
+              Math.abs(prevMonthVal).toLocaleString("ru-RU") +
+              "</span></div>";
+            html +=
+              '<div class="popup-row"><span class="popup-label">Отклонение:</span><span class="popup-val">' +
+              fmtDiff(diff, pct) +
+              "</span></div>";
           } else {
             html += '<hr class="popup-divider">';
-            html += '<div style="color:#999;font-size:0.8rem;">Нет данных за предыдущий месяц</div>';
+            html +=
+              '<div style="color:#999;font-size:0.8rem;">Нет данных за предыдущий месяц</div>';
           }
 
           if (prevYearVal !== undefined) {
             var diff = currentVal - prevYearVal;
-            var pct = prevYearVal !== 0 ? (diff / Math.abs(prevYearVal)) * 100 : null;
+            var pct =
+              prevYearVal !== 0 ? (diff / Math.abs(prevYearVal)) * 100 : null;
             html += '<hr class="popup-divider">';
-            html += '<div style="color:#888;font-size:0.8rem;">По сравнению с предыдущим годом:</div>';
-            html += '<div class="popup-row"><span class="popup-label">' + prevYearLabel + ':</span><span class="popup-val">' + (prevYearVal < 0 ? "−" : "") + Math.abs(prevYearVal).toLocaleString("ru-RU") + "</span></div>";
-            html += '<div class="popup-row"><span class="popup-label">Отклонение:</span><span class="popup-val">' + fmtDiff(diff, pct) + "</span></div>";
+            html +=
+              '<div style="color:#888;font-size:0.8rem;">По сравнению с предыдущим годом:</div>';
+            html +=
+              '<div class="popup-row"><span class="popup-label">' +
+              prevYearLabel +
+              ':</span><span class="popup-val">' +
+              (prevYearVal < 0 ? "−" : "") +
+              Math.abs(prevYearVal).toLocaleString("ru-RU") +
+              "</span></div>";
+            html +=
+              '<div class="popup-row"><span class="popup-label">Отклонение:</span><span class="popup-val">' +
+              fmtDiff(diff, pct) +
+              "</span></div>";
           } else {
             html += '<hr class="popup-divider">';
-            html += '<div style="color:#999;font-size:0.8rem;">Нет данных за предыдущий год</div>';
+            html +=
+              '<div style="color:#999;font-size:0.8rem;">Нет данных за предыдущий год</div>';
           }
 
           showPopupAtCell(cell, html);
@@ -3148,21 +3292,25 @@
       }
 
       // ─── Click handlers for popup ─────────────────────────────────────────────
-      document.getElementById("tableWrap").addEventListener("click", function (e) {
-        var cell = e.target.closest("td.num");
-        if (!cell) return;
-        if (cell.classList.contains("item-name")) return;
-        if (!tableDataCache) return;
-        showCellPopup(cell, tableDataCache, false);
-      });
+      document
+        .getElementById("tableWrap")
+        .addEventListener("click", function (e) {
+          var cell = e.target.closest("td.num");
+          if (!cell) return;
+          if (cell.classList.contains("item-name")) return;
+          if (!tableDataCache) return;
+          showCellPopup(cell, tableDataCache, false);
+        });
 
-      document.getElementById("divTableWrap").addEventListener("click", function (e) {
-        var cell = e.target.closest("td.num");
-        if (!cell) return;
-        if (cell.classList.contains("division-name")) return;
-        if (!divTableDataCache) return;
-        showCellPopup(cell, divTableDataCache, true);
-      });
+      document
+        .getElementById("divTableWrap")
+        .addEventListener("click", function (e) {
+          var cell = e.target.closest("td.num");
+          if (!cell) return;
+          if (cell.classList.contains("division-name")) return;
+          if (!divTableDataCache) return;
+          showCellPopup(cell, divTableDataCache, true);
+        });
 
       // ─── Close popup on outside click ─────────────────────────────────────────
       document.addEventListener("click", function (e) {
