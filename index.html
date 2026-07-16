@@ -210,9 +210,10 @@
         gap: 1.8rem;
       }
       .action-card {
+        position: relative;
         background: #ffffff;
         border-radius: 15px;
-        padding: 1.6rem 1rem 1.6rem 1rem;
+        padding: 1.6rem 1rem 2rem 1rem;
         cursor: pointer;
         transition:
           transform 0.25s cubic-bezier(0.2, 0.9, 0.4, 1.1),
@@ -237,6 +238,13 @@
         color: #4b6a85;
         font-weight: 500;
         padding: 0 0.3rem;
+      }
+      .card-date {
+        position: absolute;
+        bottom: 8px;
+        right: 12px;
+        font-size: 11px;
+        color: #aaa;
       }
       .action-card:hover {
         transform: translateY(-6px);
@@ -510,9 +518,19 @@
           button.id = itemId;
           button.tabIndex = 0;
           button.role = "button";
+          const dateStr = new Date(item.last_update).toLocaleString("ru-RU", {
+            day: "2-digit",
+            month: "2-digit",
+            year: "numeric",
+            hour: "2-digit",
+            minute: "2-digit",
+            hour12: false,
+            timeZone: "Europe/Moscow",
+          });
           button.innerHTML = `
       <div class="card-title">${item.label}</div>
       <div class="card-description">${item.description}</div>
+      <div class="card-date">${dateStr}</div>
     `;
           button.addEventListener("click", () => handleBlockClick(itemId));
           button.addEventListener("keydown", (e) => {
