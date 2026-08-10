@@ -498,7 +498,7 @@
           // ВАЖНО: обычный form POST, чтобы не было CORS preflight
           const formData = new URLSearchParams();
           formData.append("idToken", currentIdToken);
-          formData.append("action", "orgsrtru");
+          formData.append("action", "org_stru");
           if (dataMeta.id) formData.append("id", dataMeta.id);
 
           const resp = await fetch(API_BASE_URL, {
