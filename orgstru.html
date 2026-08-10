@@ -1,0 +1,1008 @@
+<!doctype html>
+<html lang="ru">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Организационная структура</title>
+    <style>
+      * {
+        box-sizing: border-box;
+        margin: 0;
+        padding: 0;
+      }
+
+      body {
+        font-family: "Segoe UI", system-ui, sans-serif;
+        background: #f0f2f8;
+        overflow: hidden;
+        user-select: none;
+      }
+
+      /* ── Шапка ─────────────────────────────── */
+      #header {
+        position: fixed;
+        top: 0;
+        left: 0;
+        right: 0;
+        z-index: 100;
+        background: #1a3a5c;
+        color: #fff;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        padding: 10px 20px;
+        box-shadow: 0 2px 12px rgba(0, 0, 0, 0.25);
+      }
+      #header h1 {
+        font-size: 15px;
+        font-weight: 700;
+        letter-spacing: 0.02em;
+      }
+      #header p {
+        font-size: 11px;
+        opacity: 0.7;
+        margin-top: 2px;
+      }
+
+      /* ── Кнопки управления ─────────────────── */
+      #controls {
+        display: flex;
+        gap: 8px;
+        align-items: center;
+      }
+      .btn {
+        background: rgba(255, 255, 255, 0.15);
+        border: 1px solid rgba(255, 255, 255, 0.3);
+        color: #fff;
+        border-radius: 6px;
+        padding: 5px 12px;
+        font-size: 12px;
+        cursor: pointer;
+        transition: background 0.15s;
+      }
+      .btn:hover {
+        background: rgba(255, 255, 255, 0.28);
+      }
+
+      /* ── Легенда ───────────────────────────── */
+      #legend {
+        position: fixed;
+        bottom: 16px;
+        right: 16px;
+        z-index: 100;
+        background: rgba(255, 255, 255, 0.95);
+        border-radius: 10px;
+        padding: 12px 16px;
+        box-shadow: 0 4px 20px rgba(0, 0, 0, 0.12);
+        font-size: 11px;
+      }
+      #legend h3 {
+        font-size: 11px;
+        font-weight: 700;
+        color: #333;
+        margin-bottom: 8px;
+        letter-spacing: 0.04em;
+        text-transform: uppercase;
+      }
+      .leg-item {
+        display: flex;
+        align-items: center;
+        gap: 7px;
+        margin-bottom: 5px;
+        color: #444;
+      }
+      .leg-dot {
+        width: 12px;
+        height: 12px;
+        border-radius: 3px;
+        flex-shrink: 0;
+      }
+      .leg-line {
+        width: 24px;
+        height: 3px;
+        flex-shrink: 0;
+        border-radius: 2px;
+      }
+      .leg-dash {
+        width: 24px;
+        height: 0;
+        border-top: 2.5px dashed;
+        flex-shrink: 0;
+      }
+
+      /* ── Панель детали (клик по узлу) ──────── */
+      #detail-panel {
+        position: fixed;
+        top: 60px;
+        right: 16px;
+        z-index: 200;
+        width: 280px;
+        background: #fff;
+        border-radius: 12px;
+        box-shadow: 0 8px 32px rgba(0, 0, 0, 0.18);
+        padding: 18px;
+        transform: translateX(320px);
+        transition: transform 0.3s cubic-bezier(0.34, 1.4, 0.64, 1);
+        pointer-events: none;
+      }
+      #detail-panel.open {
+        transform: translateX(0);
+        pointer-events: auto;
+      }
+      #detail-panel .dp-color-bar {
+        height: 4px;
+        border-radius: 2px;
+        margin-bottom: 14px;
+        margin-right: 10px;
+      }
+      #detail-panel .dp-title {
+        font-size: 14px;
+        font-weight: 700;
+        color: #1a3a5c;
+        margin-bottom: 4px;
+      }
+      #detail-panel .dp-sub {
+        font-size: 11px;
+        color: #777;
+        margin-bottom: 12px;
+        font-style: italic;
+      }
+      #detail-panel .dp-section {
+        font-size: 11px;
+        color: #444;
+        margin-bottom: 8px;
+      }
+      #detail-panel .dp-section strong {
+        display: block;
+        font-size: 10px;
+        text-transform: uppercase;
+        color: #aaa;
+        margin-bottom: 3px;
+        letter-spacing: 0.05em;
+      }
+      #detail-panel .dp-close {
+        position: absolute;
+        top: 12px;
+        right: 12px;
+        background: none;
+        border: none;
+        font-size: 18px;
+        cursor: pointer;
+        color: #aaa;
+      }
+      #detail-panel .dp-close:hover {
+        color: #333;
+      }
+      .dp-tag {
+        display: inline-block;
+        background: #f0f4ff;
+        color: #3b5bdb;
+        border-radius: 4px;
+        padding: 2px 7px;
+        font-size: 10px;
+        margin: 2px;
+        font-weight: 500;
+      }
+      .dp-tag.urgent {
+        background: #fff0f0;
+        color: #c0392b;
+      }
+      .dp-tag.plan {
+        background: #f0fff4;
+        color: #2d7a3e;
+      }
+
+      /* ── Подсказка при наведении ────────────── */
+      #tooltip {
+        position: fixed;
+        z-index: 300;
+        background: rgba(26, 58, 92, 0.92);
+        color: #fff;
+        border-radius: 7px;
+        padding: 6px 11px;
+        font-size: 11.5px;
+        pointer-events: none;
+        opacity: 0;
+        transition: opacity 0.15s;
+        max-width: 220px;
+      }
+
+      /* ── Загрузочный экран ───────────────────── */
+      #disclaimer {
+        position: fixed;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        z-index: 1000;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        background: #f0f2f8;
+        color: #1a3a5c;
+        font-family: "Segoe UI", system-ui, sans-serif;
+        font-size: 15px;
+        font-weight: 600;
+        text-align: center;
+        padding: 24px;
+        white-space: pre-line;
+      }
+
+      /* ── SVG ────────────────────────────────── */
+      #canvas {
+        position: fixed;
+        top: 52px;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        overflow: hidden;
+      }
+      svg {
+        width: 100%;
+        height: 100%;
+      }
+
+      .node rect {
+        rx: 8;
+        ry: 8;
+        cursor: pointer;
+        transition: filter 0.15s;
+      }
+      .node:hover rect {
+        filter: brightness(1.12);
+      }
+      .node text {
+        pointer-events: none;
+      }
+
+      .link {
+        fill: none;
+        stroke-linecap: round;
+      }
+      .link-sub {
+        stroke: #a0aec0;
+        stroke-width: 1.8;
+        marker-end: url(#arrow-sub);
+      }
+      .link-comm {
+        stroke: #e87722;
+        stroke-width: 2;
+        stroke-dasharray: 6 4;
+        marker-start: url(#arrow-comm);
+        marker-end: url(#arrow-comm);
+      }
+      .link-key {
+        stroke: #c62828;
+        stroke-width: 2.8;
+        stroke-dasharray: 6 4;
+        marker-start: url(#arrow-key);
+        marker-end: url(#arrow-key);
+      }
+      .link-plan {
+        stroke: #a0aec0;
+        stroke-width: 1.6;
+        stroke-dasharray: 5 4;
+        marker-end: url(#arrow-sub);
+        opacity: 0.7;
+      }
+      .link-ops {
+        stroke: #6a1b9a;
+        stroke-width: 1.8;
+        stroke-dasharray: 5 4;
+        marker-start: url(#arrow-ops);
+        marker-end: url(#arrow-ops);
+      }
+      .link-future {
+        stroke: #2e7d32;
+        stroke-width: 1.8;
+        stroke-dasharray: 7 4;
+        marker-end: url(#arrow-future);
+        opacity: 0.85;
+      }
+      .node-future rect {
+        stroke: #2e7d32 !important;
+        stroke-width: 2.2;
+        stroke-dasharray: 7 4;
+      }
+
+      /* фильтр подсветки для выбранного узла */
+      .node.selected rect {
+        filter: drop-shadow(0 0 8px rgba(255, 255, 255, 0.7)) brightness(1.15);
+      }
+    </style>
+  </head>
+  <body>
+    <!-- Загрузочный экран (открывается только с главной страницы) -->
+    <div id="disclaimer">
+      Этот раздел открывается/обновляется только с главной страницы!
+    </div>
+
+    <!-- Шапка -->
+    <div id="header">
+      <div>
+        <h1 id="header-title">Организационная структура</h1>
+        <p>
+          Интерактивная схема | Кликните на блок для подробностей | Прокрутка — масштаб | Перетаскивание — перемещение
+        </p>
+      </div>
+      <div id="controls">
+        <button class="btn" onclick="resetZoom()">⟳ Сбросить вид</button>
+        <button
+          class="btn"
+          id="btn-sub"
+          onclick="toggleLayer('sub')"
+          data-label="Структура (подчинение + перспективы)"
+        >
+          ✓ Структура (подчинение + перспективы)
+        </button>
+      </div>
+    </div>
+
+    <!-- Tooltip -->
+    <div id="tooltip"></div>
+
+    <!-- Панель детали -->
+    <div id="detail-panel">
+      <button class="dp-close" onclick="closeDetail()">×</button>
+      <div class="dp-color-bar" id="dp-bar"></div>
+      <div class="dp-title" id="dp-title"></div>
+      <div class="dp-sub" id="dp-sub"></div>
+      <div id="dp-body"></div>
+    </div>
+
+    <!-- Легенда -->
+    <div id="legend">
+      <h3>Легенда</h3>
+      <div class="leg-item">
+        <div class="leg-dot" style="background: #1a3a5c"></div>
+        Собственник
+      </div>
+      <div class="leg-item">
+        <div class="leg-dot" style="background: #1a6b5c"></div>
+        Директор / Бизнес-ассистент
+      </div>
+      <div class="leg-item">
+        <div class="leg-dot" style="background: #7b3f00"></div>
+        Производство
+      </div>
+      <div class="leg-item">
+        <div class="leg-dot" style="background: #1a4a7b"></div>
+        Реализация
+      </div>
+      <div class="leg-item">
+        <div class="leg-dot" style="background: #4a235a"></div>
+        Управление и финансы
+      </div>
+      <div class="leg-item">
+        <div class="leg-dot" style="background: #4e342e"></div>
+        Обеспечение
+      </div>
+      <div class="leg-item">
+        <div class="leg-dot" style="background: #1b5e20"></div>
+        Маркетинг и развитие
+      </div>
+      <div
+        style="margin-top: 8px; border-top: 1px solid #eee; padding-top: 8px"
+      >
+        <div class="leg-item">
+          <div class="leg-line" style="background: #a0aec0"></div>
+          Подчинение
+        </div>
+        <div class="leg-item">
+          <div
+            class="leg-dash"
+            style="border-color: #e87722; color: #e87722"
+          ></div>
+          Коммуникации ↔
+        </div>
+        <div class="leg-item">
+          <div
+            class="leg-dash"
+            style="border-color: #c62828; color: #c62828; border-width: 3px"
+          ></div>
+          Ключевая связка
+        </div>
+        <div class="leg-item">
+          <div
+            class="leg-dash"
+            style="border-color: #6a1b9a; color: #6a1b9a"
+          ></div>
+          Оперативное управление
+        </div>
+        <div class="leg-item">
+          <div
+            class="leg-dash"
+            style="border-color: #2e7d32; color: #2e7d32"
+          ></div>
+          <span style="color: #2e7d32; font-weight: 600"
+            >Будущая структура ↗</span
+          >
+        </div>
+      </div>
+    </div>
+
+    <!-- Canvas -->
+    <div id="canvas">
+      <svg id="svg"></svg>
+    </div>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/d3/7.9.0/d3.min.js"></script>
+    <script>
+      // ═══════════════════════════════════════════════════════════════
+      //  ЗАГРУЗКА
+      // ═══════════════════════════════════════════════════════════════
+
+      const API_BASE_URL =
+        "https://script.google.com/macros/s/AKfycbxj0_zS6rSzLqqTjKn2FkJNjZ9JPMXEhBil4iNpMesX4XZ8alUhEHokt9HFrp-u_KaF/exec";
+      const disclaimerDiv = document.getElementById("disclaimer");
+      let currentIdToken = null;
+      let email = null;
+      let dataMeta = null;
+
+      // Сообщаем главной странице, что готовы принять токен
+      if (window.opener) {
+        window.opener.postMessage("ready", window.location.origin);
+      }
+
+      // Принимаем токен от главной страницы
+      window.addEventListener("message", function (event) {
+        if (event.origin !== window.location.origin) return;
+        if (event.data && event.data.type === "AUTHTOKEN") {
+          currentIdToken = event.data.token;
+          email = event.data.email;
+          dataMeta = event.data.data;
+          loadData();
+        }
+      });
+
+      function showError(msg) {
+        disclaimerDiv.style.display = "flex";
+        disclaimerDiv.textContent = msg;
+      }
+      function hideError() {}
+
+      // Нормализация узла: detail может прийти строкой JSON (как в nodes.csv)
+      function normalizeNode(n) {
+        const out = Object.assign({}, n);
+        if (typeof out.detail === "string") {
+          try {
+            out.detail = JSON.parse(out.detail);
+          } catch (e) {
+            out.detail = {};
+          }
+        }
+        if (!out.detail) out.detail = {};
+        return out;
+      }
+
+      function normalizeLink(l) {
+        return {
+          s: l.s !== undefined ? l.s : l.source,
+          t: l.t !== undefined ? l.t : l.target,
+          type: l.type || "sub",
+          label: l.label,
+        };
+      }
+
+      async function loadData() {
+        if (!dataMeta) return;
+        if (!currentIdToken) {
+          showError("Необходимо войти через Google.");
+          return;
+        }
+
+        hideError();
+        disclaimerDiv.textContent = "⏳ Загрузка данных из таблицы...";
+
+        try {
+          // ВАЖНО: обычный form POST, чтобы не было CORS preflight
+          const formData = new URLSearchParams();
+          formData.append("idToken", currentIdToken);
+          formData.append("action", "orgsrtru");
+          if (dataMeta.id) formData.append("id", dataMeta.id);
+
+          const resp = await fetch(API_BASE_URL, {
+            method: "POST",
+            body: formData,
+          });
+
+          if (!resp.ok) throw new Error("HTTP " + resp.status);
+          const json = await resp.json();
+
+          if (!json.ok) {
+            showError(
+              json.forbidden
+                ? "⛔ " + json.error + "\n\nОбратитесь к администратору."
+                : json.error,
+            );
+            return;
+          }
+
+          applyGraphData(json.data);
+          disclaimerDiv.style.display = "none";
+        } catch (err) {
+          showError("Ошибка загрузки: " + err.message);
+        }
+      }
+
+      function applyGraphData(parsed) {
+        let graph = parsed;
+        let rawNodes = [];
+        let rawLinks = [];
+
+        if (graph && typeof graph === "object") {
+          if (Array.isArray(graph.nodes) || Array.isArray(graph.links)) {
+            rawNodes = graph.nodes || [];
+            rawLinks = graph.links || [];
+          } else if (graph.data && typeof graph.data === "object") {
+            rawNodes = graph.data.nodes || [];
+            rawLinks = graph.data.links || [];
+          } else if (Array.isArray(graph) && graph.length === 2) {
+            rawNodes = Array.isArray(graph[0]) ? graph[0] : [];
+            rawLinks = Array.isArray(graph[1]) ? graph[1] : [];
+          }
+        }
+
+        nodes = rawNodes.map(normalizeNode);
+        links = rawLinks.map(normalizeLink);
+
+        if (dataMeta && dataMeta.label) {
+          document.title = dataMeta.label;
+          const titleEl = document.getElementById("header-title");
+          if (titleEl) titleEl.textContent = dataMeta.label;
+        }
+
+        rebuildNodeMap();
+        renderNodes();
+        renderLinks();
+      }
+
+      // ═══════════════════════════════════════════════════════════════
+      //  ДАННЫЕ
+      // ═══════════════════════════════════════════════════════════════
+
+      // Узлы и связи загружаются одним fetch-запросом с бэкенда
+      // (endpoint "orgsrtru") — аналогично pnl.html
+      let nodes = [];
+      let links = [];
+
+      // ═══════════════════════════════════════════════════════════════
+      //  РЕНДЕР
+      // ═══════════════════════════════════════════════════════════════
+
+      const svg = d3.select("#svg");
+      const GRAPH_W = 3950,
+        GRAPH_H = 600;
+      let W, H, scale0, tx0, ty0;
+
+      if (typeof d3 === "undefined") {
+        document.getElementById("canvas").innerHTML =
+          '<p style="color:#1A3A5C;font-family:Segoe UI,system-ui,sans-serif;padding:24px;font-size:14px">' +
+          "Не удалось загрузить D3.js — проверьте подключение к интернету или сохраните d3.min.js локально.</p>";
+        throw new Error("D3.js не загружен");
+      }
+
+      function computeViewport() {
+        const headerH = document.getElementById("header").offsetHeight || 52;
+        document.getElementById("canvas").style.top = headerH + "px";
+        W = window.innerWidth;
+        H = Math.max(0, window.innerHeight - headerH);
+        scale0 = Math.min(W / (GRAPH_W + 80), H / (GRAPH_H + 60)) * 0.92;
+        tx0 = (W - GRAPH_W * scale0) / 2;
+        ty0 = (H - GRAPH_H * scale0) / 2 + 4;
+      }
+
+      function applyHomeView() {
+        computeViewport();
+        svg.call(
+          zoom.transform,
+          d3.zoomIdentity.translate(tx0, ty0).scale(scale0),
+        );
+      }
+
+      // Маркеры стрелок
+      const defs = svg.append("defs");
+
+      function addMarker(id, color, refX = 8) {
+        defs
+          .append("marker")
+          .attr("id", id)
+          .attr("viewBox", "0 -4 10 8")
+          .attr("refX", refX)
+          .attr("refY", 0)
+          .attr("markerWidth", 6)
+          .attr("markerHeight", 6)
+          .attr("orient", "auto-start-reverse")
+          .append("path")
+          .attr("d", "M0,-4L10,0L0,4Z")
+          .attr("fill", color);
+      }
+      addMarker("arrow-sub", "#A0AEC0");
+      addMarker("arrow-comm", "#E87722", 6);
+      addMarker("arrow-key", "#C62828", 6);
+      addMarker("arrow-ops", "#6A1B9A", 6);
+      addMarker("arrow-future", "#2E7D32", 8);
+
+      // Группа для трансформации (zoom/pan)
+      const g = svg.append("g").attr("id", "main");
+
+      // Zoom
+      const zoom = d3
+        .zoom()
+        .scaleExtent([0.18, 2.8])
+        .on("zoom", (e) => g.attr("transform", e.transform));
+      svg.call(zoom);
+
+      // Начальное масштабирование — вписать в экран
+      applyHomeView();
+
+      // Слои
+      const layerNodes = g.append("g").attr("id", "layer-nodes");
+      const layerLinks = g.append("g").attr("id", "layer-links");
+      const layerLabels = g.append("g").attr("id", "layer-labels");
+
+      // Вспомогательные переменные слоёв
+      let showSub = true;
+
+      // ── Поиск узла по id
+      let nodeMap = {};
+      function rebuildNodeMap() {
+        nodeMap = {};
+        nodes.forEach((n) => (nodeMap[n.id] = n));
+      }
+      rebuildNodeMap();
+
+      // ── Ломаная линия с уходом вертикально вниз/вверх
+      function pathBetween(n1, n2, type) {
+        const x1 = n1.x + n1.w / 2,
+          y1 = n1.y + n1.h / 2;
+        const x2 = n2.x + n2.w / 2,
+          y2 = n2.y + n2.h / 2;
+
+        // Выходная/входная точки (центр краёв)
+        let sx, sy, ex, ey;
+        if (type === "sub" || type === "plan") {
+          // Подчинение: из центра нижнего края источника в центр верхнего края подчинённого
+          sx = n1.x + n1.w / 2;
+          sy = n1.y + n1.h;
+          ex = n2.x + n2.w / 2;
+          ey = n2.y;
+        } else if (Math.abs(y2 - y1) > Math.abs(x2 - x1) * 0.6) {
+          // В основном вертикальная связь
+          sx = n1.x + n1.w / 2;
+          sy = y2 > y1 ? n1.y + n1.h : n1.y;
+          ex = n2.x + n2.w / 2;
+          ey = y2 > y1 ? n2.y : n2.y + n2.h;
+        } else {
+          // В основном горизонтальная связь
+          sx = x2 > x1 ? n1.x + n1.w : n1.x;
+          sy = n1.y + n1.h / 2;
+          ex = x2 > x1 ? n2.x : n2.x + n2.w;
+          ey = n2.y + n2.h / 2;
+        }
+        //const mx = (sx + ex) / 2;
+        //const my = (sy + ey) / 2;
+        const my = ey + (sy > ey ? 25 : -25);
+
+        if (type === "comm" || type === "key" || type === "ops") {
+          // Кривая Безье
+          const cp1x = sx + (ex - sx) * 0.3;
+          const cp1y = sy + (ey - sy) * 0.3; //0.05 - 40;
+          const cp2x = sx + (ex - sx) * 0.7;
+          const cp2y = ey - (ey - sy) * 0.7; //0.05 - 40;
+          return `M${sx},${sy} C${cp1x},${cp1y} ${cp2x},${cp2y} ${ex},${ey}`;
+        }
+        // Прямоугольная ломаная
+        return `M${sx},${sy} L${sx},${my} L${ex},${my} L${ex},${ey}`;
+      }
+
+      // ── Рендер связей
+      function renderLinks() {
+        layerLinks.selectAll("*").remove();
+        layerLabels.selectAll("*").remove();
+
+        const selId = selectedNode ? selectedNode.id : null;
+
+        links.forEach((lk) => {
+          const isSub = lk.type === "sub" || lk.type === "plan";
+          if (!showSub && isSub) return;
+          const isComm =
+            lk.type === "comm" ||
+            lk.type === "key" ||
+            lk.type === "ops" ||
+            lk.type === "future";
+          if (isComm) {
+            if (!selId) return;
+            if (lk.s !== selId && lk.t !== selId) return;
+          }
+
+          const n1 = nodeMap[lk.s],
+            n2 = nodeMap[lk.t];
+          if (!n1 || !n2) {
+            console.warn("Связь с несуществующим узлом:", lk.s, "->", lk.t);
+            return;
+          }
+
+          const d = pathBetween(n1, n2, lk.type);
+          let cls = "link link-" + lk.type;
+          // key — особый случай, добавляем поверх sub
+          if (lk.type === "key") cls = "link link-key";
+          if (lk.type === "future") cls = "link link-future";
+
+          layerLinks.append("path").attr("class", cls).attr("d", d);
+
+          // Подпись на коммуникационных ветках
+          if (
+            lk.label &&
+            (lk.type === "comm" ||
+              lk.type === "key" ||
+              lk.type === "ops" ||
+              lk.type === "future")
+          ) {
+            const x1c = n1.x + n1.w / 2,
+              y1c = n1.y + n1.h / 2;
+            const x2c = n2.x + n2.w / 2,
+              y2c = n2.y + n2.h / 2;
+            const lx = (x1c + x2c) / 2,
+              ly = (y1c + y2c) / 2 - 44;
+            const color =
+              lk.type === "key"
+                ? "#C62828"
+                : lk.type === "ops"
+                  ? "#6A1B9A"
+                  : lk.type === "future"
+                    ? "#2E7D32"
+                    : "#B05200";
+            const bg =
+              lk.type === "key"
+                ? "#FFF0F0"
+                : lk.type === "ops"
+                  ? "#F3E8FF"
+                  : lk.type === "future"
+                    ? "#EAF7EC"
+                    : "#FFF8F0";
+
+            layerLabels
+              .append("rect")
+              .attr("x", lx - 98)
+              .attr("y", ly - 9)
+              .attr("width", 196)
+              .attr("height", 18)
+              .attr("rx", 4)
+              .attr("fill", bg)
+              .attr("opacity", 0.93);
+            layerLabels
+              .append("text")
+              .attr("x", lx)
+              .attr("y", ly + 4)
+              .attr("text-anchor", "middle")
+              .attr("font-size", 9.5)
+              .attr("fill", color)
+              .attr("font-family", "Segoe UI, system-ui, sans-serif")
+              .attr("font-weight", "600")
+              .text(lk.label);
+          }
+        });
+      }
+
+      // ── Рендер узлов
+      let selectedNode = null;
+
+      function renderNodes() {
+        layerNodes.selectAll("*").remove();
+
+        nodes.forEach((n) => {
+          const g2 = layerNodes
+            .append("g")
+            .attr("class", "node" + (n.extraClass ? " " + n.extraClass : ""))
+            .attr("id", "node-" + n.id)
+            .style("cursor", "pointer")
+            .on("click", () => openDetail(n))
+            .on("mouseenter", (ev) => showTooltip(ev, n))
+            .on("mousemove", (ev) => moveTooltip(ev))
+            .on("mouseleave", hideTooltip);
+
+          // Тень
+          g2.append("rect")
+            .attr("x", n.x + 3)
+            .attr("y", n.y + 3)
+            .attr("width", n.w)
+            .attr("height", n.h)
+            .attr("rx", 8)
+            .attr("ry", 8)
+            .attr("fill", "rgba(0,0,0,0.18)");
+
+          // Фон
+          g2.append("rect")
+            .attr("x", n.x)
+            .attr("y", n.y)
+            .attr("width", n.w)
+            .attr("height", n.h)
+            .attr("rx", 8)
+            .attr("ry", 8)
+            .attr("fill", n.color)
+            .attr("stroke", n.extraClass ? "#2E7D32" : "none")
+            .attr("stroke-width", n.extraClass ? 2.2 : 0)
+            .attr("stroke-dasharray", n.extraClass ? "7 4" : "none");
+
+          // Метка — главная
+          g2.append("text")
+            .attr("x", n.x + n.w / 2)
+            .attr("y", n.y + (n.sub ? n.h * 0.38 : n.h * 0.54))
+            .attr("text-anchor", "middle")
+            .attr("font-size", 11.5)
+            .attr("fill", "#fff")
+            .attr("font-weight", "700")
+            .attr("font-family", "Segoe UI, system-ui, sans-serif")
+            .text(n.label);
+
+          // Подпись
+          if (n.sub) {
+            g2.append("text")
+              .attr("x", n.x + n.w / 2)
+              .attr("y", n.y + n.h * 0.72)
+              .attr("text-anchor", "middle")
+              .attr("font-size", 9)
+              .attr("fill", "rgba(255,255,255,0.78)")
+              .attr("font-style", "italic")
+              .attr("font-family", "Segoe UI, system-ui, sans-serif")
+              .text(n.sub.length > 36 ? n.sub.slice(0, 34) + "…" : n.sub);
+          }
+
+          // Метка тегов
+          const urgCount = n.detail.tags.filter((t) => t === "urgent").length;
+          if (urgCount > 0) {
+            g2.append("circle")
+              .attr("cx", n.x + n.w - 8)
+              .attr("cy", n.y + 8)
+              .attr("r", 5)
+              .attr("fill", "#FF6B6B");
+          }
+        });
+      }
+
+      // ── Тултип
+      const tooltip = document.getElementById("tooltip");
+      function esc(s) {
+        return String(s).replace(
+          /[&<>"']/g,
+          (c) =>
+            ({
+              "&": "&amp;",
+              "<": "&lt;",
+              ">": "&gt;",
+              '"': "&quot;",
+              "'": "&#39;",
+            })[c],
+        );
+      }
+      function showTooltip(ev, n) {
+        tooltip.innerHTML = `<strong>${esc(n.label)}</strong><br><span style="opacity:0.8;font-size:10px">${esc(n.sub || "")}</span>`;
+        tooltip.style.opacity = 1;
+        moveTooltip(ev);
+      }
+      function moveTooltip(ev) {
+        const pad = 14;
+        let x = ev.clientX + pad;
+        let y = ev.clientY + pad;
+        if (x + tooltip.offsetWidth > window.innerWidth - pad)
+          x = ev.clientX - tooltip.offsetWidth - pad;
+        if (y + tooltip.offsetHeight > window.innerHeight - pad)
+          y = ev.clientY - tooltip.offsetHeight - pad;
+        tooltip.style.left = Math.max(0, x) + "px";
+        tooltip.style.top = Math.max(pad, y) + "px";
+      }
+      function hideTooltip() {
+        tooltip.style.opacity = 0;
+      }
+
+      // ── Панель деталей
+      const panel = document.getElementById("detail-panel");
+      const dpBar = document.getElementById("dp-bar");
+      const dpTitle = document.getElementById("dp-title");
+      const dpSub = document.getElementById("dp-sub");
+      const dpBody = document.getElementById("dp-body");
+
+      function openDetail(n) {
+        // Снять выделение с предыдущего
+        if (selectedNode)
+          d3.select("#node-" + selectedNode.id).classed("selected", false);
+        selectedNode = n;
+        d3.select("#node-" + n.id).classed("selected", true);
+        renderLinks();
+
+        dpBar.style.background = n.color;
+        dpTitle.textContent = n.label;
+        dpSub.textContent = n.detail.dept + " | " + (n.detail.persons || "—");
+
+        let html = "";
+
+        // Подчинение
+        if (n.detail.report) {
+          html += `<div class="dp-section"><strong>Подчинение</strong>${esc(n.detail.report)}</div>`;
+        }
+
+        // Функции
+        if (n.detail.funcs && n.detail.funcs.length) {
+          html += `<div class="dp-section"><strong>Функции</strong><ul style="padding-left:14px;font-size:11px;color:#444;line-height:1.6">`;
+          n.detail.funcs.forEach((f) => (html += `<li>${esc(f)}</li>`));
+          html += "</ul></div>";
+        }
+
+        // Заметки
+        if (n.detail.notes && n.detail.notes.length) {
+          html += `<div class="dp-section"><strong>Важно</strong>`;
+          n.detail.notes.forEach((note) => {
+            html += `<div style="font-size:10.5px;color:#555;margin-bottom:4px;padding:4px 8px;background:#FFF9F0;border-left:3px solid #E87722;border-radius:2px">${esc(note)}</div>`;
+          });
+          html += "</div>";
+        }
+
+        // Теги
+        if (n.detail.tags && n.detail.tags.length) {
+          html += '<div style="margin-top:8px">';
+          n.detail.tags.forEach((tag) => {
+            if (tag === "urgent")
+              html += `<span class="dp-tag urgent">🔴 Срочно</span>`;
+            if (tag === "plan")
+              html += `<span class="dp-tag plan">⬜ Планируется</span>`;
+          });
+          html += "</div>";
+        }
+
+        dpBody.innerHTML = html;
+        panel.classList.add("open");
+
+        // Центрировать узел в поле зрения — с учётом панели деталей справа
+        const t = d3.zoomTransform(svg.node());
+        const nx = n.x + n.w / 2,
+          ny = n.y + n.h / 2;
+        const tx = (W - 320) / 2 - nx * t.k;
+        const ty = H / 2 - ny * t.k;
+        svg
+          .transition()
+          .duration(420)
+          .call(zoom.transform, d3.zoomIdentity.translate(tx, ty).scale(t.k));
+      }
+
+      function closeDetail() {
+        panel.classList.remove("open");
+        if (selectedNode) {
+          d3.select("#node-" + selectedNode.id).classed("selected", false);
+          selectedNode = null;
+        }
+        renderLinks();
+      }
+
+      // ── Переключение слоёв
+      function toggleLayer(layer) {
+        if (layer === "sub") showSub = !showSub;
+        const btn = document.getElementById("btn-" + layer);
+        btn.textContent = (showSub ? "✓ " : "✕ ") + btn.dataset.label;
+        btn.style.opacity = showSub ? 1 : 0.4;
+        renderLinks();
+      }
+
+      // ── Сброс вида
+      function resetZoom() {
+        closeDetail();
+        svg
+          .transition()
+          .duration(500)
+          .call(
+            zoom.transform,
+            d3.zoomIdentity.translate(tx0, ty0).scale(scale0),
+          );
+      }
+
+      // ── Первичный рендер
+      renderNodes();
+      renderLinks();
+
+      // ── Resize
+      window.addEventListener("resize", () => {
+        computeViewport();
+      });
+    </script>
+  </body>
+</html>
