@@ -759,7 +759,7 @@
               lk.type === "future")
           ) {
             const lx = cs.sx + (cs.ex - cs.sx) / 3,
-              ly = cs.sy + (cs.ey - cs.sy) / 3;
+              ly = cs.sy + (cs.ey - cs.sy) / 3 + (cs.ex > cs.sx ? -5 : 5);
             const color =
               lk.type === "key"
                 ? "#C62828"
