@@ -705,7 +705,7 @@
       }
 
       // ── Ломаная линия с уходом вертикально вниз/вверх или Безье
-      function pathBetween(cs) {
+      function pathBetween(cs, type) {
         if (type === "comm" || type === "key" || type === "ops") {
           // Кривая Безье
           return `M${cs.sx},${cs.sy} C${cs.cp1x},${cs.cp1y} ${cs.cp2x},${cs.cp2y} ${cs.ex},${cs.ey}`;
@@ -742,7 +742,7 @@
           }
 
           const cs = pathBetweenHelper(n1, n2, type);
-          const d = pathBetween(cs);
+          const d = pathBetween(cs, type);
           let cls = "link link-" + lk.type;
           // key — особый случай, добавляем поверх sub
           if (lk.type === "key") cls = "link link-key";
