@@ -209,11 +209,23 @@
 
       /* ── Загрузочный экран ───────────────────── */
       #disclaimer {
+        position: fixed;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        z-index: 1000;
+        display: flex;
+        align-items: top;
+        justify-content: center;
+        background: #f0f2f8;
         color: #1a73e8;
+        font-family: "Segoe UI", system-ui, sans-serif;
+        font-size: 1rem;
         font-weight: bold;
         text-align: center;
         padding: 20px;
-        font-size: 1rem;
+        white-space: pre-line;
       }
 
       /* ── SVG ────────────────────────────────── */
@@ -310,7 +322,8 @@
       <div>
         <h1 id="header-title">Организационная структура</h1>
         <p>
-          Интерактивная схема | Кликните на блок для подробностей | Прокрутка — масштаб | Перетаскивание — перемещение
+          Интерактивная схема | Кликните на блок для подробностей | Прокрутка —
+          масштаб | Перетаскивание — перемещение
         </p>
       </div>
       <div id="controls">
