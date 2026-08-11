@@ -741,8 +741,8 @@
             return;
           }
 
-          const cs = pathBetweenHelper(n1, n2, type);
-          const d = pathBetween(cs, type);
+          const cs = pathBetweenHelper(n1, n2, lk.type);
+          const d = pathBetween(cs, lk.type);
           let cls = "link link-" + lk.type;
           // key — особый случай, добавляем поверх sub
           if (lk.type === "key") cls = "link link-key";
