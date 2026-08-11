@@ -744,10 +744,8 @@
               y1c = n1.y + n1.h / 2;
             const x2c = n2.x + n2.w / 2,
               y2c = n2.y + n2.h / 2;
-            const mx = (x1c + x2c) / 2,
-              my = (y1c + y2c) / 2;
-            const lx = (x1c + mx) / 2,
-              ly = (y1c + my) / 2; // - 44;
+            const lx = x1c + (x2c - x1c) / 3,
+              ly = y1c + (y2c - y1c) / 3; // - 44;
             const color =
               lk.type === "key"
                 ? "#C62828"
