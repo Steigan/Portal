@@ -653,8 +653,8 @@
       }
       rebuildNodeMap();
 
-      // ── Ломаная линия с уходом вертикально вниз/вверх
-      function pathBetween(n1, n2, type) {
+      // ── Координаты для линий связи
+      function pathBetweenHelper(n1, n2, type) {
         const x1 = n1.x + n1.w / 2,
           y1 = n1.y + n1.h / 2;
         const x2 = n2.x + n2.w / 2,
@@ -685,16 +685,33 @@
         //const my = (sy + ey) / 2;
         const my = ey + (sy > ey ? 25 : -25);
 
+        // Кривая Безье
+        const cp1x = sx + (ex - sx) * 0.3;
+        const cp1y = sy + (ey - sy) * 0.3; //0.05 - 40;
+        const cp2x = sx + (ex - sx) * 0.7;
+        const cp2y = ey - (ey - sy) * 0.7; //0.05 - 40;
+
+        return {
+          sx: sx,
+          sy: sy,
+          cp1x: cp1x,
+          cp1y: cp1y,
+          cp2x: cp2x,
+          cp2y: cp2y,
+          ex: ex,
+          ey: ey,
+          my: my,
+        };
+      }
+
+      // ── Ломаная линия с уходом вертикально вниз/вверх или Безье
+      function pathBetween(cs) {
         if (type === "comm" || type === "key" || type === "ops") {
           // Кривая Безье
-          const cp1x = sx + (ex - sx) * 0.3;
-          const cp1y = sy + (ey - sy) * 0.3; //0.05 - 40;
-          const cp2x = sx + (ex - sx) * 0.7;
-          const cp2y = ey - (ey - sy) * 0.7; //0.05 - 40;
-          return `M${sx},${sy} C${cp1x},${cp1y} ${cp2x},${cp2y} ${ex},${ey}`;
+          return `M${cs.sx},${cs.sy} C${cs.cp1x},${cs.cp1y} ${cs.cp2x},${cs.cp2y} ${cs.ex},${cs.ey}`;
         }
         // Прямоугольная ломаная
-        return `M${sx},${sy} L${sx},${my} L${ex},${my} L${ex},${ey}`;
+        return `M${cs.sx},${cs.sy} L${cs.sx},${cs.my} L${cs.ex},${cs.my} L${cs.ex},${cs.ey}`;
       }
 
       // ── Рендер связей
@@ -724,7 +741,8 @@
             return;
           }
 
-          const d = pathBetween(n1, n2, lk.type);
+          const cs = pathBetweenHelper(n1, n2, type);
+          const d = pathBetween(cs);
           let cls = "link link-" + lk.type;
           // key — особый случай, добавляем поверх sub
           if (lk.type === "key") cls = "link link-key";
@@ -740,12 +758,8 @@
               lk.type === "ops" ||
               lk.type === "future")
           ) {
-            const x1c = n1.x + n1.w / 2,
-              y1c = n1.y + n1.h / 2;
-            const x2c = n2.x + n2.w / 2,
-              y2c = n2.y + n2.h / 2;
-            const lx = x1c + (x2c - x1c) / 3,
-              ly = y1c + (y2c - y1c) / 3; // - 44;
+            const lx = cs.sx + (cs.ex - cs.sx) / 3,
+              ly = cs.sy + (cs.ey - cs.sy) / 3;
             const color =
               lk.type === "key"
                 ? "#C62828"
@@ -765,9 +779,9 @@
 
             layerLabels
               .append("rect")
-              .attr("x", lx - 98)
+              .attr("x", lx - 110)
               .attr("y", ly - 9)
-              .attr("width", 196)
+              .attr("width", 220)
               .attr("height", 18)
               .attr("rx", 4)
               .attr("fill", bg)
