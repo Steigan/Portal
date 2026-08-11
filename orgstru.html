@@ -328,6 +328,7 @@
       </div>
       <div id="controls">
         <button class="btn" onclick="resetZoom()">⟳ Сбросить вид</button>
+        <button class="btn" onclick="exportSvg()">⬇ Скачать SVG</button>
         <button
           class="btn"
           id="btn-sub"
@@ -996,6 +997,88 @@
         btn.textContent = (showSub ? "✓ " : "✕ ") + btn.dataset.label;
         btn.style.opacity = showSub ? 1 : 0.4;
         renderLinks();
+      }
+
+      // ── Экспорт схемы в автономный SVG
+      function sanitizeFilename(s) {
+        return String(s).replace(/[\\/:*?"<>|]/g, "_").trim() || "orgstru";
+      }
+
+      function svgContentBounds() {
+        let minX = Infinity,
+          minY = Infinity,
+          maxX = -Infinity,
+          maxY = -Infinity;
+        function incl(el) {
+          if (!el || typeof el.getBBox !== "function") return;
+          const b = el.getBBox();
+          if (b.width === 0 && b.height === 0) return;
+          if (b.x < minX) minX = b.x;
+          if (b.y < minY) minY = b.y;
+          if (b.x + b.width > maxX) maxX = b.x + b.width;
+          if (b.y + b.height > maxY) maxY = b.y + b.height;
+        }
+        document
+          .querySelectorAll(
+            "#layer-nodes .node, #layer-links path, #layer-labels *",
+          )
+          .forEach(incl);
+        if (!isFinite(minX) || !isFinite(minY)) return null;
+        return { x: minX, y: minY, w: maxX - minX, h: maxY - minY };
+      }
+
+      function exportSvg() {
+        const bounds = svgContentBounds() || { x: 0, y: 0, w: GRAPH_W, h: GRAPH_H };
+        const pad = 40;
+        const x = bounds.x - pad,
+          y = bounds.y - pad,
+          w = bounds.w + pad * 2,
+          h = bounds.h + pad * 2;
+
+        const clone = document.getElementById("svg").cloneNode(true);
+        clone.setAttribute("xmlns", "http://www.w3.org/2000/svg");
+        clone.setAttribute("width", Math.round(w));
+        clone.setAttribute("height", Math.round(h));
+        clone.setAttribute("viewBox", `${x} ${y} ${w} ${h}`);
+        const main = clone.querySelector("#main");
+        if (main) main.removeAttribute("transform");
+
+        const style = document.createElementNS(
+          "http://www.w3.org/2000/svg",
+          "style",
+        );
+        style.textContent = [
+          "svg { background: #f0f2f8; }",
+          ".node text { pointer-events: none; }",
+          ".link { fill: none; stroke-linecap: round; }",
+          ".link-sub { stroke: #a0aec0; stroke-width: 1.8; }",
+          ".link-comm { stroke: #e87722; stroke-width: 2; stroke-dasharray: 6 4; }",
+          ".link-key { stroke: #c62828; stroke-width: 2.8; stroke-dasharray: 6 4; }",
+          ".link-plan { stroke: #a0aec0; stroke-width: 1.6; stroke-dasharray: 5 4; opacity: 0.7; }",
+          ".link-ops { stroke: #6a1b9a; stroke-width: 1.8; stroke-dasharray: 5 4; }",
+          ".link-future { stroke: #2e7d32; stroke-width: 1.8; stroke-dasharray: 7 4; opacity: 0.85; }",
+          ".node-future rect { stroke: #2e7d32; stroke-width: 2.2; stroke-dasharray: 7 4; }",
+          ".node.selected rect { filter: drop-shadow(0 0 8px rgba(255,255,255,0.7)) brightness(1.15); }",
+        ].join("\n");
+        clone.prepend(style);
+
+        const svgStr =
+          '<?xml version="1.0" encoding="UTF-8"?>\n' +
+          new XMLSerializer().serializeToString(clone);
+        const name = sanitizeFilename(
+          dataMeta && dataMeta.label ? dataMeta.label : "orgstru",
+        );
+        const blob = new Blob(["\ufeff", svgStr], {
+          type: "image/svg+xml;charset=utf-8",
+        });
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement("a");
+        a.href = url;
+        a.download = name + ".svg";
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
+        setTimeout(() => URL.revokeObjectURL(url), 1000);
       }
 
       // ── Сброс вида
