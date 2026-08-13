@@ -3,7 +3,7 @@
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Отчёт об операциях по картам, СБП и QR</title>
+    <title>Эквайринг</title>
     <link
       rel="apple-touch-icon"
       sizes="57x57"
@@ -406,6 +406,22 @@
           var(--color-surface-2)
         );
       }
+      tbody tr.group-row:hover {
+        background: color-mix(
+          in oklch,
+          var(--color-surface-offset) 70%,
+          var(--color-surface-2)
+        );
+      }
+      tbody tr.group-row td {
+        background: color-mix(
+          in oklch,
+          var(--color-surface-offset) 70%,
+          var(--color-surface-2)
+        );
+        font-weight: 700;
+        border-top: 1px solid var(--color-border);
+      }
       #results thead th:last-child,
       #results tbody td:last-child,
       #results tfoot td:last-child {
@@ -557,15 +573,15 @@
             <table>
               <thead>
                 <tr>
-                  <th>Дата платежа</th>
                   <th>Дата поступления на р/с</th>
+                  <th>Дата платежа</th>
                   <th>Сумма</th>
                 </tr>
               </thead>
               <tbody id="body"></tbody>
               <tfoot>
                 <tr>
-                  <td colspan="2">Итого</td>
+                  <td colspan="2">Всего</td>
                   <td id="total"></td>
                 </tr>
               </tfoot>
@@ -687,6 +703,11 @@
           }
           return -1;
         }
+        function dateKey(s) {
+          if (!s) return 0;
+          const m = String(s).match(/^(\d{2})\.(\d{2})\.(\d{4})$/);
+          return m ? +m[3] * 10000 + +m[2] * 100 + +m[1] : 0;
+        }
         function render() {
           const selected = $("address").value;
           const grouped = new Map();
@@ -697,25 +718,43 @@
               const old = grouped.get(k);
               grouped.set(k, { ...r, sum: (old?.sum || 0) + r.sum });
             });
-          const data = [...grouped.values()].sort((a, b) =>
-            (a.payment + "|" + a.receipt).localeCompare(
-              b.payment + "|" + b.receipt,
-              "ru",
-            ),
+          const data = [...grouped.values()].sort(
+            (a, b) =>
+              dateKey(a.receipt) - dateKey(b.receipt) ||
+              dateKey(a.payment) - dateKey(b.payment),
           );
-          $("body").innerHTML = data
-            .map(
-              (r) =>
-                `<tr><td>${escapeHtml(r.payment)}</td><td>${escapeHtml(r.receipt)}</td><td>${money.format(r.sum)}</td></tr>`,
-            )
-            .join("");
+          const html = [];
+          let groupSum = 0;
+          let currentReceipt = null;
+          data.forEach((r) => {
+            if (r.receipt !== currentReceipt) {
+              if (currentReceipt !== null) {
+                html.push(
+                  `<tr class="group-row"><td>${escapeHtml(currentReceipt)} · Итого</td><td></td><td>${money.format(groupSum)}</td></tr>`,
+                );
+              }
+              currentReceipt = r.receipt;
+              groupSum = 0;
+            }
+            groupSum += r.sum;
+            html.push(
+              `<tr><td>${escapeHtml(r.receipt)}</td><td>${escapeHtml(r.payment)}</td><td>${money.format(r.sum)}</td></tr>`,
+            );
+          });
+          if (currentReceipt !== null) {
+            html.push(
+              `<tr class="group-row"><td>${escapeHtml(currentReceipt)} · Итого</td><td></td><td>${money.format(groupSum)}</td></tr>`,
+            );
+          }
+          $("body").innerHTML = html.join("");
           $("total").textContent = money.format(
             data.reduce((s, r) => s + r.sum, 0),
           );
           $("results").classList.toggle("hidden", !data.length);
           $("empty").classList.toggle("hidden", !!data.length);
+          const groups = new Set(data.map((r) => r.receipt)).size;
           resultMeta.textContent = data.length
-            ? `Показано строк: ${data.length}`
+            ? `Показано строк: ${data.length} · Групп: ${groups}`
             : "По выбранному адресу платежей нет.";
           if (!data.length)
             $("empty").textContent = "По выбранному адресу платежи не найдены.";
