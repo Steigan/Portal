@@ -422,9 +422,9 @@
         font-weight: 700;
         border-top: 1px solid var(--color-border);
       }
-      #results thead th:last-child,
-      #results tbody td:last-child,
-      #results tfoot td:last-child {
+      #results thead th:nth-last-child(-n + 3),
+      #results tbody td:nth-last-child(-n + 3),
+      #results tfoot td:nth-last-child(-n + 3) {
         text-align: right;
       }
       tfoot td {
@@ -574,14 +574,18 @@
               <thead>
                 <tr>
                   <th>Дата поступления на р/с</th>
-                  <th>Дата платежа</th>
-                  <th>Сумма</th>
+                  <th>Дата покупки</th>
+                  <th>Поступления</th>
+                  <th>Возвраты</th>
+                  <th>Всего</th>
                 </tr>
               </thead>
               <tbody id="body"></tbody>
               <tfoot>
                 <tr>
                   <td colspan="2">Всего</td>
+                  <td id="totalInflow"></td>
+                  <td id="totalRefunds"></td>
                   <td id="total"></td>
                 </tr>
               </tfoot>
@@ -624,6 +628,7 @@
       (() => {
         const required = [
           "Адрес ТСТ",
+          "Тип операции",
           "Дата операции",
           "Дата ПП",
           "Сумма операции",
@@ -716,7 +721,12 @@
             .forEach((r) => {
               const k = r.payment + "\u0000" + r.receipt;
               const old = grouped.get(k);
-              grouped.set(k, { ...r, sum: (old?.sum || 0) + r.sum });
+              grouped.set(k, {
+                ...r,
+                inflow: (old?.inflow || 0) + r.inflow,
+                refunds: (old?.refunds || 0) + r.refunds,
+                sum: (old?.sum || 0) + r.sum,
+              });
             });
           const data = [...grouped.values()].sort(
             (a, b) =>
@@ -724,29 +734,41 @@
               dateKey(a.payment) - dateKey(b.payment),
           );
           const html = [];
+          let groupInflow = 0;
+          let groupRefunds = 0;
           let groupSum = 0;
           let currentReceipt = null;
           data.forEach((r) => {
             if (r.receipt !== currentReceipt) {
               if (currentReceipt !== null) {
                 html.push(
-                  `<tr class="group-row"><td>${escapeHtml(currentReceipt)} · Итого</td><td></td><td>${money.format(groupSum)}</td></tr>`,
+                  `<tr class="group-row"><td>${escapeHtml(currentReceipt)} · Итого</td><td></td><td>${money.format(groupInflow)}</td><td>${money.format(groupRefunds)}</td><td>${money.format(groupSum)}</td></tr>`,
                 );
               }
               currentReceipt = r.receipt;
+              groupInflow = 0;
+              groupRefunds = 0;
               groupSum = 0;
             }
+            groupInflow += r.inflow;
+            groupRefunds += r.refunds;
             groupSum += r.sum;
             html.push(
-              `<tr><td>${escapeHtml(r.receipt)}</td><td>${escapeHtml(r.payment)}</td><td>${money.format(r.sum)}</td></tr>`,
+              `<tr><td>${escapeHtml(r.receipt)}</td><td>${escapeHtml(r.payment)}</td><td>${money.format(r.inflow)}</td><td>${money.format(r.refunds)}</td><td>${money.format(r.sum)}</td></tr>`,
             );
           });
           if (currentReceipt !== null) {
             html.push(
-              `<tr class="group-row"><td>${escapeHtml(currentReceipt)} · Итого</td><td></td><td>${money.format(groupSum)}</td></tr>`,
+              `<tr class="group-row"><td>${escapeHtml(currentReceipt)} · Итого</td><td></td><td>${money.format(groupInflow)}</td><td>${money.format(groupRefunds)}</td><td>${money.format(groupSum)}</td></tr>`,
             );
           }
           $("body").innerHTML = html.join("");
+          $("totalInflow").textContent = money.format(
+            data.reduce((s, r) => s + r.inflow, 0),
+          );
+          $("totalRefunds").textContent = money.format(
+            data.reduce((s, r) => s + r.refunds, 0),
+          );
           $("total").textContent = money.format(
             data.reduce((s, r) => s + r.sum, 0),
           );
@@ -806,12 +828,18 @@
             state.rows = matrix
               .slice(h + 1)
               .filter((r) => r.some((v) => v !== "" && v != null))
-              .map((r) => ({
-                address: String(r[ix["Адрес ТСТ"]] ?? "").trim(),
-                payment: formatDate(r[ix["Дата операции"]]),
-                receipt: formatDate(r[ix["Дата ПП"]]),
-                sum: amount(r[ix["Сумма операции"]]),
-              }))
+              .map((r) => {
+                const sum = amount(r[ix["Сумма операции"]]);
+                const isRefund = norm(r[ix["Тип операции"]]) === "возврат";
+                return {
+                  address: String(r[ix["Адрес ТСТ"]] ?? "").trim(),
+                  payment: formatDate(r[ix["Дата операции"]]),
+                  receipt: formatDate(r[ix["Дата ПП"]]),
+                  inflow: isRefund ? 0 : sum,
+                  refunds: isRefund ? sum : 0,
+                  sum,
+                };
+              })
               .filter((r) => r.address);
             const addresses = [
               ...new Set(state.rows.map((r) => r.address)),
