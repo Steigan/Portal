@@ -623,6 +623,8 @@
         nodes = rawNodes.map(normalizeNode);
         links = rawLinks.map(normalizeLink);
 
+        computeGraphSize();
+
         if (dataMeta && dataMeta.label) {
           document.title = dataMeta.label;
           const titleEl = document.getElementById("header-title");
@@ -632,6 +634,7 @@
         rebuildNodeMap();
         renderNodes();
         renderLinks();
+        applyHomeView();
       }
 
       // ═══════════════════════════════════════════════════════════════
@@ -648,7 +651,7 @@
       // ═══════════════════════════════════════════════════════════════
 
       const svg = d3.select("#svg");
-      const GRAPH_W = 3950,
+      let GRAPH_W = 3950,
         GRAPH_H = 600;
       let W, H, scale0, tx0, ty0;
 
@@ -657,6 +660,30 @@
           '<p style="color:#1A3A5C;font-family:Segoe UI,system-ui,sans-serif;padding:24px;font-size:14px">' +
           "Не удалось загрузить D3.js — проверьте подключение к интернету или сохраните d3.min.js локально.</p>";
         throw new Error("D3.js не загружен");
+      }
+
+      function computeGraphSize() {
+        if (!nodes.length) {
+          GRAPH_W = 3950;
+          GRAPH_H = 600;
+          return;
+        }
+        let minX = Infinity,
+          minY = Infinity,
+          maxX = -Infinity,
+          maxY = -Infinity;
+        for (const n of nodes) {
+          const x = +n.x || 0,
+            y = +n.y || 0,
+            w = +n.w || 0,
+            h = +n.h || 0;
+          if (x < minX) minX = x;
+          if (y < minY) minY = y;
+          if (x + w > maxX) maxX = x + w;
+          if (y + h > maxY) maxY = y + h;
+        }
+        GRAPH_W = maxX + minX;
+        GRAPH_H = maxY + minY;
       }
 
       function computeViewport() {
