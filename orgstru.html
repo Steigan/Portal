@@ -852,16 +852,20 @@
           ey = ep.y;
         }
 
+        const sOnV = !!sPt && (sPt.side === "L" || sPt.side === "R");
+        const tOnV = !!tPt && (tPt.side === "L" || tPt.side === "R");
         const hfirst =
           !!sPt &&
           !!tPt &&
-          (sPt.side === "L" || sPt.side === "R") &&
-          (tPt.side === "L" || tPt.side === "R");
+          sOnV &&
+          tOnV;
+        // Один конец на горизонтальной, другой на вертикальной стороне рамки
+        const mixed = !!sPt && !!tPt && sOnV !== tOnV;
 
         //const mx = (sx + ex) / 2;
         //const my = (sy + ey) / 2;
-        const my = ey + (sy > ey ? 25 : -25);
-        const mx = ex + (sx > ex ? 25 : -25);
+        const my = ey + (sy > ey ? 20 : -20);
+        const mx = ex + (sx > ex ? 20 : -20);
 
         // Кривая Безье
         const cp1x = sx + (ex - sx) * 0.3;
@@ -881,6 +885,8 @@
           my: my,
           mx: mx,
           hfirst: hfirst,
+          mixed: mixed,
+          startOnV: sOnV,
         };
       }
 
@@ -895,6 +901,16 @@
         }
         if (cs.hfirst) {
           return `M${cs.sx},${cs.sy} L${cs.mx},${cs.sy} L${cs.mx},${cs.ey} L${cs.ex},${cs.ey}`;
+        }
+        // Прямой угол: горизонтальная и вертикальная стороны рамок —
+        // единственный излом, без лишней горизонтальной «рейки»
+        if (cs.mixed) {
+          if (cs.startOnV) {
+            // старт уходит горизонтально, финиш подходит вертикально
+            return `M${cs.sx},${cs.sy} L${cs.ex},${cs.sy} L${cs.ex},${cs.ey}`;
+          }
+          // старт уходит вертикально, финиш подходит горизонтально
+          return `M${cs.sx},${cs.sy} L${cs.sx},${cs.ey} L${cs.ex},${cs.ey}`;
         }
         // Прямоугольная ломаная
         return `M${cs.sx},${cs.sy} L${cs.sx},${cs.my} L${cs.ex},${cs.my} L${cs.ex},${cs.ey}`;
