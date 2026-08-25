@@ -10,6 +10,7 @@ desktop.ini
 # Editor files
 .vscode/
 .idea/
+.gigacode/
 *.swp
 *.swo
 *~
@@ -24,3 +25,6 @@ trash/
 # Environment
 .env
 .env.local
+*.json
+
+.agents/
