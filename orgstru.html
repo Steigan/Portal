@@ -4,6 +4,79 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Организационная структура</title>
+    <link
+      rel="apple-touch-icon"
+      sizes="57x57"
+      href="images/apple-icon-57x57.png"
+    />
+    <link
+      rel="apple-touch-icon"
+      sizes="60x60"
+      href="images/apple-icon-60x60.png"
+    />
+    <link
+      rel="apple-touch-icon"
+      sizes="72x72"
+      href="images/apple-icon-72x72.png"
+    />
+    <link
+      rel="apple-touch-icon"
+      sizes="76x76"
+      href="images/apple-icon-76x76.png"
+    />
+    <link
+      rel="apple-touch-icon"
+      sizes="114x114"
+      href="images/apple-icon-114x114.png"
+    />
+    <link
+      rel="apple-touch-icon"
+      sizes="120x120"
+      href="images/apple-icon-120x120.png"
+    />
+    <link
+      rel="apple-touch-icon"
+      sizes="144x144"
+      href="images/apple-icon-144x144.png"
+    />
+    <link
+      rel="apple-touch-icon"
+      sizes="152x152"
+      href="images/apple-icon-152x152.png"
+    />
+    <link
+      rel="apple-touch-icon"
+      sizes="180x180"
+      href="images/apple-icon-180x180.png"
+    />
+    <link
+      rel="icon"
+      type="image/png"
+      sizes="192x192"
+      href="images/android-icon-192x192.png"
+    />
+    <link
+      rel="icon"
+      type="image/png"
+      sizes="32x32"
+      href="images/favicon-32x32.png"
+    />
+    <link
+      rel="icon"
+      type="image/png"
+      sizes="96x96"
+      href="images/favicon-96x96.png"
+    />
+    <link
+      rel="icon"
+      type="image/png"
+      sizes="16x16"
+      href="images/favicon-16x16.png"
+    />
+    <link rel="manifest" href="images/manifest.json" />
+    <meta name="msapplication-TileColor" content="#ffffff" />
+    <meta name="msapplication-TileImage" content="images/ms-icon-144x144.png" />
+    <meta name="theme-color" content="#ffffff" />
     <style>
       * {
         box-sizing: border-box;
@@ -483,6 +556,8 @@
           t: l.t !== undefined ? l.t : l.target,
           type: l.type || "sub",
           label: l.label,
+          s_pt: l.s_pt,
+          t_pt: l.t_pt,
         };
       }
 
@@ -654,8 +729,66 @@
       }
       rebuildNodeMap();
 
+      // ── Точки привязки связи на рамках узлов
+      function parsePt(v) {
+        if (typeof v !== "string") return null;
+        const m = v.trim().match(/^([TBRL])(\d+(?:\.\d+)?)$/);
+        if (!m) return null;
+        const pct = parseFloat(m[2]);
+        if (!(pct >= 0 && pct <= 100)) return null;
+        return { side: m[1], pct: pct };
+      }
+
+      function ptOnFrame(n, pt) {
+        const d = pt.pct / 100;
+        if (pt.side === "T") return { x: n.x + n.w * d, y: n.y };
+        if (pt.side === "B") return { x: n.x + n.w * d, y: n.y + n.h };
+        if (pt.side === "L") return { x: n.x, y: n.y + n.h * d };
+        return { x: n.x + n.w, y: n.y + n.h * d };
+      }
+
+      function nearestFramePoint(n, px, py) {
+        const cx = Math.max(n.x, Math.min(n.x + n.w, px));
+        const cy = Math.max(n.y, Math.min(n.y + n.h, py));
+        if (cx !== px || cy !== py) return { x: cx, y: cy };
+        return [
+          { d: px - n.x, x: n.x, y: py },
+          { d: n.x + n.w - px, x: n.x + n.w, y: py },
+          { d: py - n.y, x: px, y: n.y },
+          { d: n.y + n.h - py, x: px, y: n.y + n.h },
+        ].sort((a, b) => a.d - b.d)[0];
+      }
+
+      function straightPath(sp, ep) {
+        return {
+          straight: true,
+          sx: sp.x,
+          sy: sp.y,
+          ex: ep.x,
+          ey: ep.y,
+          cp1x: sp.x,
+          cp1y: sp.y,
+          cp2x: ep.x,
+          cp2y: ep.y,
+          my: ep.y,
+        };
+      }
+
       // ── Координаты для линий связи
-      function pathBetweenHelper(n1, n2, type) {
+      function pathBetweenHelper(n1, n2, type, lk) {
+        const sPt = lk ? parsePt(lk.s_pt) : null;
+        const tPt = lk ? parsePt(lk.t_pt) : null;
+
+        // Один конец задан явно — кратчайший путь до рамки другого узла
+        if (sPt && !tPt) {
+          const sp = ptOnFrame(n1, sPt);
+          return straightPath(sp, nearestFramePoint(n2, sp.x, sp.y));
+        }
+        if (!sPt && tPt) {
+          const ep = ptOnFrame(n2, tPt);
+          return straightPath(nearestFramePoint(n1, ep.x, ep.y), ep);
+        }
+
         const x1 = n1.x + n1.w / 2,
           y1 = n1.y + n1.h / 2;
         const x2 = n2.x + n2.w / 2,
@@ -682,9 +815,26 @@
           ex = x2 > x1 ? n2.x : n2.x + n2.w;
           ey = n2.y + n2.h / 2;
         }
+
+        if (sPt && tPt) {
+          const sp = ptOnFrame(n1, sPt);
+          const ep = ptOnFrame(n2, tPt);
+          sx = sp.x;
+          sy = sp.y;
+          ex = ep.x;
+          ey = ep.y;
+        }
+
+        const hfirst =
+          !!sPt &&
+          !!tPt &&
+          (sPt.side === "L" || sPt.side === "R") &&
+          (tPt.side === "L" || tPt.side === "R");
+
         //const mx = (sx + ex) / 2;
         //const my = (sy + ey) / 2;
         const my = ey + (sy > ey ? 25 : -25);
+        const mx = ex + (sx > ex ? 25 : -25);
 
         // Кривая Безье
         const cp1x = sx + (ex - sx) * 0.3;
@@ -702,14 +852,22 @@
           ex: ex,
           ey: ey,
           my: my,
+          mx: mx,
+          hfirst: hfirst,
         };
       }
 
       // ── Ломаная линия с уходом вертикально вниз/вверх или Безье
       function pathBetween(cs, type) {
+        if (cs.straight) {
+          return `M${cs.sx},${cs.sy} L${cs.ex},${cs.ey}`;
+        }
         if (type === "comm" || type === "key" || type === "ops") {
           // Кривая Безье
           return `M${cs.sx},${cs.sy} C${cs.cp1x},${cs.cp1y} ${cs.cp2x},${cs.cp2y} ${cs.ex},${cs.ey}`;
+        }
+        if (cs.hfirst) {
+          return `M${cs.sx},${cs.sy} L${cs.mx},${cs.sy} L${cs.mx},${cs.ey} L${cs.ex},${cs.ey}`;
         }
         // Прямоугольная ломаная
         return `M${cs.sx},${cs.sy} L${cs.sx},${cs.my} L${cs.ex},${cs.my} L${cs.ex},${cs.ey}`;
@@ -742,7 +900,7 @@
             return;
           }
 
-          const cs = pathBetweenHelper(n1, n2, lk.type);
+          const cs = pathBetweenHelper(n1, n2, lk.type, lk);
           const d = pathBetween(cs, lk.type);
           let cls = "link link-" + lk.type;
           // key — особый случай, добавляем поверх sub
