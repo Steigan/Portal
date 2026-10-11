@@ -342,27 +342,8 @@
           Используйте Google-аккаунт, которому предоставлен доступ.<br />Вход
           происходит без всплывающих окон.
         </p>
-        <div
-          id="g_id_onload"
-          data-client_id="689537368198-bt1m9v6rm5pcv35sucqqcfin4hou9nri.apps.googleusercontent.com"
-          data-callback="handleGoogleSignIn"
-          data-auto_select="false"
-          data-use_fedcm_for_prompt="true"
-          data-itp_support="true"
-        ></div>
-        <div id="googleBtnWrap">
-          <div
-            class="g_id_signin"
-            data-type="standard"
-            data-size="large"
-            data-theme="outline"
-            data-text="signin_with"
-            data-shape="rectangular"
-            data-logo_alignment="left"
-            data-locale="ru"
-            data-width="280"
-          ></div>
-        </div>
+        <!-- Кнопка Google Sign-In рендерится из JS (initGoogle) -->
+        <div id="googleBtnWrap"></div>
         <div id="loginError"></div>
       </div>
     </div>
@@ -388,6 +369,9 @@
 
     <script>
       // ─── Состояние ───────────────────────────────────────────────────────────
+      const CLIENT_ID =
+        "689537368198-bt1m9v6rm5pcv35sucqqcfin4hou9nri.apps.googleusercontent.com";
+      const STORAGE_KEY = "portal_google_cred";
       let currentIdToken = null;
       let email = "";
       let json = null;
@@ -396,6 +380,89 @@
       // ─── Элементы DOM ────────────────────────────────────────────────────────
       const errorDiv = document.getElementById("error");
       const loaderDiv = document.getElementById("loader");
+
+      // Инициализация Google Identity Services (вызывается после загрузки gsi/client)
+      function initGoogle() {
+        google.accounts.id.initialize({
+          client_id: CLIENT_ID,
+          callback: handleGoogleSignIn,
+          auto_select: true, // тихий вход без клика, пока жива Google-сессия
+          use_fedcm_for_prompt: true,
+          itp_support: true,
+        });
+
+        google.accounts.id.renderButton(
+          document.getElementById("googleBtnWrap"),
+          {
+            type: "standard",
+            theme: "outline",
+            size: "large",
+            text: "signin_with",
+            shape: "rectangular",
+            logo_alignment: "left",
+            locale: "ru",
+            width: 280,
+          },
+        );
+
+        restoreSession(); // показать UI из сохранённого токена, если он ещё жив
+        google.accounts.id.prompt(); // попросить свежий токен без клика
+      }
+
+      // Ждём загрузки скрипта gsi/client (он подключён с async defer)
+      function whenGoogleReady(callback) {
+        if (window.google && google.accounts && google.accounts.id) {
+          callback();
+          return;
+        }
+        let tries = 0;
+        const timer = setInterval(function () {
+          if (window.google && google.accounts && google.accounts.id) {
+            clearInterval(timer);
+            callback();
+          } else if (++tries > 100) {
+            clearInterval(timer);
+            showLoginError(
+              "Не удалось загрузить Google Sign-In. Проверьте соединение.",
+            );
+          }
+        }, 100);
+      }
+
+      // Применить сессию: обновить состояние и интерфейс
+      function applySession(data) {
+        currentIdToken = data.credential;
+        email = data.email || "";
+        document.getElementById("loginScreen").style.display = "none";
+        document.getElementById("userBar").style.display = "flex";
+        document.getElementById("loginError").style.display = "none";
+        document.getElementById("userName").textContent = data.name || "";
+        document.getElementById("userEmail").textContent = data.email || "";
+        if (data.picture)
+          document.getElementById("userAvatar").src = data.picture;
+      }
+
+      // Восстановление сохранённой сессии из localStorage
+      function restoreSession() {
+        try {
+          const saved = JSON.parse(localStorage.getItem(STORAGE_KEY) || "null");
+          // используем сохранённый токен, если он живёт ещё хотя бы минуту
+          if (
+            saved &&
+            saved.credential &&
+            saved.exp * 1000 > Date.now() + 60000
+          ) {
+            applySession(saved);
+            loadSettings();
+          }
+        } catch (e) {
+          try {
+            localStorage.removeItem(STORAGE_KEY);
+          } catch (ignore) {
+            /* localStorage недоступен */
+          }
+        }
+      }
 
       function handleGoogleSignIn(response) {
         const idToken = response.credential;
@@ -406,15 +473,29 @@
           showLoginError("Ошибка декодирования токена: " + e.message);
           return;
         }
-        currentIdToken = idToken;
-        document.getElementById("loginScreen").style.display = "none";
-        document.getElementById("userBar").style.display = "flex";
-        document.getElementById("loginError").style.display = "none";
-        document.getElementById("userName").textContent = payload.name || "";
-        document.getElementById("userEmail").textContent = payload.email || "";
-        email = payload.email || "";
-        if (payload.picture)
-          document.getElementById("userAvatar").src = payload.picture;
+
+        // Запоминаем токен и срок его жизни
+        try {
+          localStorage.setItem(
+            STORAGE_KEY,
+            JSON.stringify({
+              credential: idToken,
+              exp: payload.exp,
+              name: payload.name,
+              email: payload.email,
+              picture: payload.picture,
+            }),
+          );
+        } catch (e) {
+          /* localStorage может быть недоступен (приватный режим) */
+        }
+
+        applySession({
+          credential: idToken,
+          name: payload.name,
+          email: payload.email,
+          picture: payload.picture,
+        });
         loadSettings();
       }
 
@@ -444,11 +525,15 @@
         .addEventListener("click", function () {
           email = "";
           currentIdToken = null;
+          try {
+            localStorage.removeItem(STORAGE_KEY);
+          } catch (e) {
+            /* ignore */
+          }
           document.getElementById("loginScreen").style.display = "flex";
           document.getElementById("userBar").style.display = "none";
           document.getElementById("appContent").style.display = "none";
-          filtersSection.style.display = "none";
-          calculationSection.style.display = "none";
+          document.getElementById("buttonsGrid").innerHTML = "";
           if (window.google && google.accounts && google.accounts.id) {
             google.accounts.id.disableAutoSelect();
           }
@@ -610,6 +695,9 @@
       function hideError() {
         errorDiv.style.display = "none";
       }
+
+      // ─── Запуск ──────────────────────────────────────────────────────────────
+      whenGoogleReady(initGoogle);
     </script>
   </body>
 </html>
